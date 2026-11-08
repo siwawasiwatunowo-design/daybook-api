@@ -1,0 +1,436 @@
+{
+  "info": {
+    "_postman_id": "8c7b4ec0-2b7e-4c7d-a5b1-2f4b7d9c1a61",
+    "name": "Daybook Backend V1",
+    "description": "Postman collection for Daybook Backend free-tier V1. Audio is uploaded to Neon Object Storage using a presigned PUT URL; Firebase Storage is not used. All /api routes require Authorization: Bearer {{firebaseIdToken}}. /health is public. Neon PostgreSQL is the source of truth; Firestore is an optional read model. STT uses Groq Whisper free-tier API and Gemini refinement uses the Gemini API free tier.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080",
+      "type": "string"
+    },
+    {
+      "key": "firebaseIdToken",
+      "value": "PASTE_FIREBASE_ID_TOKEN_HERE",
+      "type": "string"
+    },
+    {
+      "key": "firebaseUid",
+      "value": "PASTE_FIREBASE_UID_HERE",
+      "type": "string"
+    },
+    {
+      "key": "activityCode",
+      "value": "GENERAL_MEETING",
+      "type": "string"
+    },
+    {
+      "key": "clientRecordingId",
+      "value": "8d8a0bd0-08b4-4f84-9e8f-2c2f1d1a2c44",
+      "type": "string"
+    },
+    {
+      "key": "audioObjectName",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "recordingId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "referenceTranscript",
+      "value": "Paste a manually verified transcript that matches the complete audio file.",
+      "type": "string"
+    },
+    {
+      "key": "benchmarkModels",
+      "value": "[\"whisper-large-v3\",\"whisper-large-v3-turbo\"]",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "01 - Health",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/health",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "health"
+              ]
+            },
+            "description": "Public endpoint. Confirms that the API process responds; it does not prove PostgreSQL, Firebase, Gemini or STT dependencies are all healthy."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', function () { pm.response.to.have.status(200); });",
+                  "pm.test('Health status is ok', function () { pm.expect(pm.response.json().status).to.eql('ok'); });"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "02 - Activity Profiles",
+      "item": [
+        {
+          "name": "List Activity Profiles",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{firebaseIdToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/activity-profiles",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "activity-profiles"
+              ]
+            },
+            "description": "Returns the configured System Activity profiles. ActivityCode sent when creating a recording must match one of these profiles."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', function () { pm.response.to.have.status(200); });",
+                  "pm.test('Response is an array', function () { pm.expect(pm.response.json()).to.be.an('array'); });"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "03 - Recordings",
+      "item": [
+        {
+          "name": "Create Audio Upload URL (Neon Object Storage)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{firebaseIdToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"clientRecordingId\": \"{{clientRecordingId}}\",\n  \"contentType\": \"audio/wav\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/recordings/upload-url",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "recordings",
+                "upload-url"
+              ]
+            },
+            "description": "Request a short-lived presigned PUT URL. Upload the original audio bytes with HTTP PUT and Content-Type audio/wav before creating the processing job."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const body = pm.response.json();",
+                  "if (body.uploadUrl) pm.environment.set('uploadUrl', body.uploadUrl);",
+                  "if (body.audioObjectName) pm.environment.set('audioObjectName', body.audioObjectName);",
+                  "if (body.contentType) pm.environment.set('uploadContentType', body.contentType);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Upload Audio File to Neon (select binary file)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "{{uploadContentType}}"
+              }
+            ],
+            "body": {
+              "mode": "file",
+              "file": {
+                "src": ""
+              }
+            },
+            "url": {
+              "raw": "{{uploadUrl}}",
+              "host": [
+                "{{uploadUrl}}"
+              ]
+            },
+            "description": "After Create Audio Upload URL, select the original audio file in Body > binary. Send this PUT before Create Recording Job. The Content-Type must match the type used when requesting the URL."
+          }
+        },
+        {
+          "name": "Create Recording Job",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{firebaseIdToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"activityCode\": \"{{activityCode}}\",\n  \"audioObjectName\": \"{{audioObjectName}}\",\n  \"durationSeconds\": 367,\n  \"languageOverride\": \"id\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/recordings",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "recordings"
+              ]
+            },
+            "description": "Create an asynchronous processing job only after the binary PUT upload to Neon Object Storage has succeeded. audioObjectName must be the exact key returned by Create Audio Upload URL."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 202 Accepted', function () { pm.response.to.have.status(202); });",
+                  "const body = pm.response.json();",
+                  "if (body.id) { pm.environment.set('recordingId', body.id); } else if (body.Id) { pm.environment.set('recordingId', body.Id); }",
+                  "pm.test('Recording ID returned', function () { pm.expect(body.id || body.Id).to.be.a('string'); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Recording Status and Result",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{firebaseIdToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/recordings/{{recordingId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "recordings",
+                "{{recordingId}}"
+              ]
+            },
+            "description": "Poll this endpoint until status is Completed, Failed or NeedsReview. Response includes chunk progress, raw/refined transcript, MoM and per-chunk diagnostics. Only the recording owner can read it."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', function () { pm.response.to.have.status(200); });",
+                  "const body = pm.response.json();",
+                  "pm.test('Status is present', function () { pm.expect(body.status || body.Status).to.exist; });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Retry Recording Job",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{firebaseIdToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/recordings/{{recordingId}}/retry",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "recordings",
+                "{{recordingId}}",
+                "retry"
+              ]
+            },
+            "description": "Request retry for a failed or review-required job. Returns 202 when accepted or 409 when the job cannot be retried."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Retry accepted or conflict', function () { pm.expect([202, 409]).to.include(pm.response.code); });"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "04 - STT Accuracy Benchmark",
+      "item": [
+        {
+          "name": "Compare STT Models (WER and CER)",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{firebaseIdToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"activityCode\": \"{{activityCode}}\",\n  \"audioObjectName\": \"users/{{firebaseUid}}/recordings/{{clientRecordingId}}/original.wav\",\n  \"referenceTranscript\": \"{{referenceTranscript}}\",\n  \"models\": {{benchmarkModels}},\n  \"languageOverride\": \"id\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/benchmarks/transcription",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "benchmarks",
+                "transcription"
+              ]
+            },
+            "description": "Runs selected models against the same audio and a human-verified reference transcript. Use 1-4 supported models. This can be computationally expensive, especially with large models and long audio. The reference transcript must match the exact audio."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', function () { pm.response.to.have.status(200); });",
+                  "const body = pm.response.json();",
+                  "pm.test('Benchmark ID returned', function () { pm.expect(body.benchmarkId).to.be.a('string'); });",
+                  "pm.test('Model results returned', function () { pm.expect(body.results).to.be.an('array'); });"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
