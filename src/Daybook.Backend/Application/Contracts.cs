@@ -3,7 +3,7 @@ using Daybook.Backend.Options;
 
 namespace Daybook.Backend.Application;
 
-public sealed record CreateRecordingRequest(string ActivityCode, string AudioObjectName, int? DurationSeconds = null, string? LanguageOverride = null);
+public sealed record CreateRecordingRequest(string ActivityCode, string AudioObjectName, int? DurationSeconds = null, string? LanguageOverride = null, string? ClientRecordingId = null);
 
 public interface IJobRepository
 {

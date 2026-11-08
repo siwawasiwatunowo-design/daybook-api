@@ -41,6 +41,8 @@ public sealed class RecordingPipeline(
         var chunks = await jobs.GetChunksAsync(job.Id, ct);
         await publisher.PublishAsync(job, chunks.Count, chunks.Count(x => x.Status == ChunkStatus.Completed), [], ct);
         var needsReview = false;
+        var geminiAvailable = profile.EnableGeminiRefinement;
+        string? aiWarning = null;
         foreach (var chunk in chunks.OrderBy(x => x.Sequence))
         {
             ct.ThrowIfCancellationRequested();
@@ -134,16 +136,33 @@ public sealed class RecordingPipeline(
             if (string.IsNullOrWhiteSpace(chunk.RawTranscript)) continue;
             if (string.IsNullOrWhiteSpace(chunk.RefinedTranscript))
             {
-                if (!profile.EnableGeminiRefinement)
+                if (!geminiAvailable)
                 {
                     chunk.RefinedTranscript = chunk.RawTranscript;
                     chunk.ChunkSummaryJson = JsonSerializer.Serialize(new { summary = chunk.RawTranscript });
                 }
                 else
                 {
-                    var refinedChunk = await refiner.RefineChunkAsync(chunk.RawTranscript, profile, ct);
-                    chunk.RefinedTranscript = refinedChunk.RefinedTranscript;
-                    chunk.ChunkSummaryJson = refinedChunk.ChunkSummaryJson;
+                    try
+                    {
+                        var refinedChunk = await refiner.RefineChunkAsync(chunk.RawTranscript, profile, ct);
+                        chunk.RefinedTranscript = string.IsNullOrWhiteSpace(refinedChunk.RefinedTranscript)
+                            ? chunk.RawTranscript : refinedChunk.RefinedTranscript;
+                        chunk.ChunkSummaryJson = string.IsNullOrWhiteSpace(refinedChunk.ChunkSummaryJson)
+                            ? JsonSerializer.Serialize(new { summary = chunk.RawTranscript })
+                            : refinedChunk.ChunkSummaryJson;
+                    }
+                    catch (OperationCanceledException) when (ct.IsCancellationRequested) { throw; }
+                    catch (Exception ex)
+                    {
+                        // Gemini is an enhancement, not a dependency for preserving a valid STT result.
+                        geminiAvailable = false;
+                        needsReview = true;
+                        aiWarning = $"Gemini refinement unavailable; raw transcript preserved. {ex.Message}";
+                        logger.LogWarning(ex, "Gemini refinement failed for job {JobId}; falling back to raw STT text.", job.Id);
+                        chunk.RefinedTranscript = chunk.RawTranscript;
+                        chunk.ChunkSummaryJson = JsonSerializer.Serialize(new { summary = chunk.RawTranscript });
+                    }
                 }
                 await jobs.UpdateChunkAsync(chunk, ct);
             }
@@ -162,11 +181,23 @@ public sealed class RecordingPipeline(
         await jobs.UpdateJobAsync(job, ct);
         await publisher.PublishAsync(job, chunks.Count, chunks.Count(x => x.Status == ChunkStatus.Completed), chunks, ct);
 
-        job.MomJson = profile.GenerateMom
-            ? await refiner.GenerateFinalMomAsync(summaries, profile, ct)
-            : "";
+        if (profile.GenerateMom && geminiAvailable)
+        {
+            try { job.MomJson = await refiner.GenerateFinalMomAsync(summaries, profile, ct); }
+            catch (OperationCanceledException) when (ct.IsCancellationRequested) { throw; }
+            catch (Exception ex)
+            {
+                needsReview = true;
+                aiWarning = $"Gemini MoM generation unavailable; transcript is still available. {ex.Message}";
+                job.MomJson = "";
+                logger.LogWarning(ex, "Gemini MoM generation failed for job {JobId}; keeping transcript result.", job.Id);
+            }
+        }
+        else job.MomJson = "";
         job.Status = needsReview ? JobStatus.NeedsReview : JobStatus.Completed;
-        job.ErrorMessage = needsReview ? "One or more chunks triggered transcript quality checks. Review the transcript before relying on it." : null;
+        job.ErrorMessage = aiWarning ?? (needsReview
+            ? "One or more chunks triggered transcript quality checks. Review the transcript before relying on it."
+            : null);
         job.CompletedAt = DateTimeOffset.UtcNow;
         await jobs.UpdateJobAsync(job, ct);
         await publisher.PublishAsync(job, chunks.Count, chunks.Count(x => x.Status == ChunkStatus.Completed), chunks, ct);

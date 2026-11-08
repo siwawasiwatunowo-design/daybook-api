@@ -17,6 +17,9 @@ public sealed class DaybookDbContext(DbContextOptions<DaybookDbContext> options)
             e.Property(x => x.UserId).HasMaxLength(128).IsRequired();
             e.Property(x => x.ActivityCode).HasMaxLength(80).IsRequired();
             e.Property(x => x.AudioObjectName).HasMaxLength(1024).IsRequired();
+            e.Property(x => x.ClientRecordingId).HasMaxLength(64);
+            e.HasIndex(x => new { x.UserId, x.ClientRecordingId }).IsUnique()
+                .HasFilter("\"ClientRecordingId\" IS NOT NULL");
             e.Property(x => x.ProfileVersion).HasMaxLength(40).IsRequired();
             e.HasIndex(x => new { x.Status, x.CreatedAt });
             e.HasIndex(x => new { x.UserId, x.CreatedAt });

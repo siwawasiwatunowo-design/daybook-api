@@ -9,6 +9,7 @@ public sealed class RecordingJob
     public string UserId { get; set; } = "";
     public string ActivityCode { get; set; } = "";
     public string AudioObjectName { get; set; } = "";
+    public string? ClientRecordingId { get; set; }
     public int? DurationSeconds { get; set; }
     public string? LanguageOverride { get; set; }
     public string ProfileVersion { get; set; } = "1";
@@ -57,7 +58,7 @@ public sealed class TranscriptionBenchmark
 
 public sealed record RecordingChunkView(int Sequence, ChunkStatus Status, int AttemptCount,
     string? SelectedSttModel, string? QualityMetricsJson, string? SttAttemptsJson,
-    string? SttSegmentsJson, string? ErrorMessage);
+    string? SttSegmentsJson, string? ErrorMessage, double StartSeconds = 0);
 public sealed record RecordingJobView(Guid Id, string ActivityCode, JobStatus Status,
     int? DurationSeconds, int ChunkCount, int CompletedChunks, string? ErrorMessage,
     string? RawTranscript, string? RefinedTranscript, string? MomJson,

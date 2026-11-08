@@ -55,3 +55,9 @@ ALTER TABLE "RecordingChunks" ADD COLUMN IF NOT EXISTS "SelectedSttModel" varcha
 ALTER TABLE "RecordingChunks" ADD COLUMN IF NOT EXISTS "QualityMetricsJson" text NULL;
 ALTER TABLE "RecordingChunks" ADD COLUMN IF NOT EXISTS "SttAttemptsJson" text NULL;
 ALTER TABLE "RecordingChunks" ADD COLUMN IF NOT EXISTS "SttSegmentsJson" text NULL;
+
+
+-- Additive upgrades: stable client-side idempotency and replay-safe job creation.
+ALTER TABLE "RecordingJobs" ADD COLUMN IF NOT EXISTS "ClientRecordingId" varchar(64) NULL;
+CREATE UNIQUE INDEX IF NOT EXISTS "IX_RecordingJobs_UserId_ClientRecordingId"
+  ON "RecordingJobs" ("UserId", "ClientRecordingId") WHERE "ClientRecordingId" IS NOT NULL;

@@ -112,6 +112,8 @@ api.MapPost("/recordings", async (CreateRecordingRequest request, HttpContext ht
     if (string.IsNullOrWhiteSpace(userId)) return Results.Unauthorized();
     if (string.IsNullOrWhiteSpace(request.ActivityCode) || string.IsNullOrWhiteSpace(request.AudioObjectName))
         return Results.BadRequest(new { error = "ActivityCode and AudioObjectName are required." });
+    if (!string.IsNullOrWhiteSpace(request.ClientRecordingId) && !Guid.TryParse(request.ClientRecordingId, out _))
+        return Results.BadRequest(new { error = "ClientRecordingId must be a GUID when supplied." });
     if (!request.AudioObjectName.StartsWith($"users/{userId}/", StringComparison.Ordinal))
         return Results.Forbid();
     if (!await profiles.ExistsAsync(request.ActivityCode, ct))

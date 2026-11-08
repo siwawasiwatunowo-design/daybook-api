@@ -15,10 +15,19 @@ public sealed class EfJobRepository(DaybookDbContext db, IOptions<WorkerOptions>
     public async Task<RecordingJob> CreateAsync(string userId, CreateRecordingRequest request,
         Daybook.Backend.Options.ActivityProcessingProfile profile, CancellationToken ct)
     {
+        var clientRecordingId = request.ClientRecordingId?.Trim();
+        if (!string.IsNullOrWhiteSpace(clientRecordingId))
+        {
+            var existing = await db.RecordingJobs.SingleOrDefaultAsync(
+                x => x.UserId == userId && x.ClientRecordingId == clientRecordingId, ct);
+            if (existing is not null) return existing;
+        }
+
         var job = new RecordingJob
         {
             Id = Guid.NewGuid(), UserId = userId, ActivityCode = request.ActivityCode.Trim(),
-            AudioObjectName = request.AudioObjectName.Trim(), DurationSeconds = request.DurationSeconds,
+            AudioObjectName = request.AudioObjectName.Trim(), ClientRecordingId = clientRecordingId,
+            DurationSeconds = request.DurationSeconds,
             LanguageOverride = request.LanguageOverride, ProfileVersion = profile.Version,
             ProfileSnapshotJson = JsonSerializer.Serialize(profile), Status = JobStatus.Queued
         };
@@ -31,12 +40,23 @@ public sealed class EfJobRepository(DaybookDbContext db, IOptions<WorkerOptions>
     {
         var job = await db.RecordingJobs.AsNoTracking().Include(x => x.Chunks)
             .SingleOrDefaultAsync(x => x.Id == id && x.UserId == userId, ct);
-        return job is null ? null : new RecordingJobView(job.Id, job.ActivityCode, job.Status,
+        if (job is null) return null;
+        var chunkSeconds = 480d;
+        if (!string.IsNullOrWhiteSpace(job.ProfileSnapshotJson))
+        {
+            try
+            {
+                var profile = JsonSerializer.Deserialize<ActivityProcessingProfile>(job.ProfileSnapshotJson);
+                if (profile is not null) chunkSeconds = Math.Max(60, profile.ChunkDurationMinutes * 60d);
+            }
+            catch (JsonException) { }
+        }
+        return new RecordingJobView(job.Id, job.ActivityCode, job.Status,
             job.DurationSeconds, job.Chunks.Count, job.Chunks.Count(x => x.Status == ChunkStatus.Completed),
             job.ErrorMessage, job.RawTranscript, job.RefinedTranscript, job.MomJson,
             job.Chunks.OrderBy(x => x.Sequence).Select(x => new RecordingChunkView(x.Sequence, x.Status,
                 x.AttemptCount, x.SelectedSttModel, x.QualityMetricsJson, x.SttAttemptsJson,
-                x.SttSegmentsJson, x.ErrorMessage)).ToArray(),
+                x.SttSegmentsJson, x.ErrorMessage, x.Sequence * chunkSeconds)).ToArray(),
             job.CreatedAt, job.UpdatedAt);
     }
 
