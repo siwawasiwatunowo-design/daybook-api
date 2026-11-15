@@ -72,7 +72,7 @@ public sealed class RecordingPipeline(
                 var quality = profile.QualityCheckEnabled
                     ? qualityChecker.Check(primary, profile)
                     : new TranscriptQualityResult(false, [], 0, 0, 0, null, null, null, null, 100);
-                attempts.Add(new { model = primary.Model, quality.DiagnosticScore, quality.IsSuspicious, quality.Reasons });
+                attempts.Add(new { model = primary.Model, text = primary.Text, detectedLanguage = primary.DetectedLanguage, durationSeconds = primary.DurationSeconds, quality.DiagnosticScore, quality.IsSuspicious, quality.Reasons });
 
                 var candidateModels = new[] { fallbackModel }.Concat(profile.AlternativeSttModels)
                     .Where(x => !string.IsNullOrWhiteSpace(x) &&
@@ -88,10 +88,13 @@ public sealed class RecordingPipeline(
                         var candidate = await stt.TranscribeAsync(chunk.AudioFileName, profile,
                             candidateModel!, language, ct);
                         var candidateQuality = qualityChecker.Check(candidate, profile);
-                        attempts.Add(new { model = candidate.Model, candidateQuality.DiagnosticScore,
+                        attempts.Add(new { model = candidate.Model, text = candidate.Text, detectedLanguage = candidate.DetectedLanguage, durationSeconds = candidate.DurationSeconds, candidateQuality.DiagnosticScore,
                             candidateQuality.IsSuspicious, candidateQuality.Reasons });
                         // This heuristic score selects the strongest signal profile; it is not measured WER.
-                        if (candidateQuality.DiagnosticScore > quality.DiagnosticScore)
+                        // A clean candidate always outranks a suspicious one, including score ties.
+                        if ((quality.IsSuspicious && !candidateQuality.IsSuspicious) ||
+                            (quality.IsSuspicious == candidateQuality.IsSuspicious &&
+                             candidateQuality.DiagnosticScore > quality.DiagnosticScore))
                         {
                             selected = candidate;
                             quality = candidateQuality;
