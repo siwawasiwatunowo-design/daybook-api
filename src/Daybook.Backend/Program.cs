@@ -306,6 +306,60 @@ api.MapPost("/notes/ai-assist", async (NoteAiAssistRequest request, IOptions<Gem
     return Results.Problem("AI Writing Assistant is temporarily unavailable. Your note has not been changed.", statusCode: 502);
 });
 
+
+api.MapPost("/speaking/coach", async (SpeakingCoachRequest request, IOptions<GeminiOptions> geminiOptions,
+    IHttpClientFactory clients, CancellationToken ct) =>
+{
+    if (string.IsNullOrWhiteSpace(request.Transcript))
+        return Results.BadRequest(new { error = "Transcript is required." });
+    if (request.Transcript.Length > 50000)
+        return Results.BadRequest(new { error = "Transcript exceeds the 50,000 character limit." });
+    var cfg = geminiOptions.Value;
+    if (string.IsNullOrWhiteSpace(cfg.ApiKey))
+        return Results.Problem("Gemini API is not configured.", statusCode: 503);
+    var prompt = $"""
+    You are Daybook Speaking Coach. The user is practicing clear, structured speaking.
+    Respond in Indonesian unless the transcript is clearly in another language.
+    IMPORTANT: This may be a solo speaking-practice recording. Evaluate delivery structure from the transcript only.
+    Do not infer vocal tone, pace, confidence, pronunciation or identity from text. Do not attribute other speakers' words to the user.
+    If the transcript appears to contain multiple speakers or a dialogue, say that individual attribution is uncertain and evaluate only the text as a whole.
+    Give constructive, specific feedback with these sections:
+    1. Inti yang berhasil disampaikan
+    2. Struktur penyampaian (context, point, reason, example, conclusion)
+    3. Bagian yang membingungkan / melompat (quote short excerpts)
+    4. Contoh versi penyampaian yang lebih terstruktur (preserve the speaker's meaning; do not invent facts)
+    5. One focused exercise for the next attempt
+    6. A short practice prompt for a 1-2 minute retry
+    Be encouraging, avoid numeric scores, and do not merely praise.
+    Transcript:
+    {request.Transcript}
+    """;
+    var payload = new { contents = new[] { new { parts = new[] { new { text = prompt } } } },
+        generationConfig = new { temperature = 0.3 } };
+    var candidates = new[] { cfg.Model, cfg.FallbackModel }.Where(x => !string.IsNullOrWhiteSpace(x))
+        .Distinct(StringComparer.OrdinalIgnoreCase);
+    foreach (var model in candidates)
+    {
+        using var timeout = CancellationTokenSource.CreateLinkedTokenSource(ct);
+        timeout.CancelAfter(TimeSpan.FromSeconds(Math.Clamp(cfg.RequestTimeoutSeconds, 5, 60)));
+        var client = clients.CreateClient("gemini"); client.Timeout = Timeout.InfiniteTimeSpan;
+        using var message = new HttpRequestMessage(HttpMethod.Post, $"{cfg.EndpointBase.TrimEnd('/')}/{model}:generateContent");
+        message.Headers.Add("x-goog-api-key", cfg.ApiKey); message.Content = JsonContent.Create(payload);
+        try
+        {
+            using var response = await client.SendAsync(message, timeout.Token);
+            var body = await response.Content.ReadAsStringAsync(timeout.Token);
+            if (!response.IsSuccessStatusCode) continue;
+            using var doc = JsonDocument.Parse(body);
+            var text = doc.RootElement.GetProperty("candidates")[0].GetProperty("content").GetProperty("parts")[0].GetProperty("text").GetString();
+            if (!string.IsNullOrWhiteSpace(text)) return Results.Ok(new { coaching = text });
+        }
+        catch (OperationCanceledException) when (ct.IsCancellationRequested) { throw; }
+        catch (OperationCanceledException) { } catch (HttpRequestException) { } catch (JsonException) { }
+    }
+    return Results.Problem("Speaking Coach is temporarily unavailable.", statusCode: 502);
+});
+
 // Runs a real model comparison on a user-owned audio object against a manually verified reference transcript.
 // This is the only reliable way in this solution to measure WER; heuristic QC is not an accuracy metric.
 api.MapPost("/benchmarks/transcription", async (TranscriptionBenchmarkRequest request, HttpContext http,
@@ -382,7 +436,7 @@ finally
 }
 
 public sealed record CreateUploadUrlRequest(string ClientRecordingId, string ContentType = "audio/wav");
-public sealed record NoteAiReviewRequest(string? Title, string Content);\npublic sealed record NoteAiAssistRequest(string? Title, string Content, string? Action, string? Instruction = null);
+public sealed record NoteAiReviewRequest(string? Title, string Content);\npublic sealed record NoteAiAssistRequest(string? Title, string Content, string? Action, string? Instruction = null);\npublic sealed record SpeakingCoachRequest(string Transcript);
 
 public sealed record TranscriptionBenchmarkRequest(string ActivityCode, string AudioObjectName,
     string ReferenceTranscript, List<string> Models, string? LanguageOverride = null);
