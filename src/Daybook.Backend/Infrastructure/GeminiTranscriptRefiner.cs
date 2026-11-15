@@ -128,7 +128,39 @@ public sealed class GeminiTranscriptRefiner(
                 };
                 request.Headers.Add("x-goog-api-key", cfg.ApiKey);
 
-                using var response = await client.SendAsync(request, ct);
+                HttpResponseMessage response;
+                try
+                {
+                    response = await client.SendAsync(request, ct);
+                }
+                catch (OperationCanceledException) when (ct.IsCancellationRequested)
+                {
+                    throw;
+                }
+                catch (TaskCanceledException ex)
+                {
+                    lastError = new TimeoutException($"Gemini request timed out for model '{model}' on attempt {attempt}.", ex);
+                    logger.LogWarning(ex, "Gemini request timed out (Model: {Model}, Attempt: {Attempt}).", model, attempt);
+                    if (attempt < 2)
+                    {
+                        await Task.Delay(TimeSpan.FromSeconds(attempt * 2), ct);
+                        continue;
+                    }
+                    break;
+                }
+                catch (HttpRequestException ex)
+                {
+                    lastError = ex;
+                    logger.LogWarning(ex, "Gemini transport error (Model: {Model}, Attempt: {Attempt}).", model, attempt);
+                    if (attempt < 2)
+                    {
+                        await Task.Delay(TimeSpan.FromSeconds(attempt * 2), ct);
+                        continue;
+                    }
+                    break;
+                }
+
+                using (response)
                 var body = await response.Content.ReadAsStringAsync(ct);
 
                 if (response.IsSuccessStatusCode)
