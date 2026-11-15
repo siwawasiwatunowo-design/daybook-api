@@ -146,7 +146,7 @@ public sealed class RecordingPipeline(
         foreach (var chunk in chunks.OrderBy(x => x.Sequence))
         {
             if (string.IsNullOrWhiteSpace(chunk.RawTranscript)) continue;
-            if (ShouldRunRefinement(chunk))
+            if (ShouldRunRefinement(chunk.RefinedTranscript, chunk.ChunkSummaryJson))
             {
                 if (!profile.EnableGeminiRefinement)
                 {
@@ -246,13 +246,13 @@ public sealed class RecordingPipeline(
         // policy before production deployment rather than deleting source audio immediately.
         logger.LogInformation("Recording job {JobId} finished with status {Status}.", job.Id, job.Status);
     }
-    private static bool ShouldRunRefinement(RecordingChunk chunk)
+    private static bool ShouldRunRefinement(string? refinedTranscript, string? chunkSummaryJson)
     {
-        if (string.IsNullOrWhiteSpace(chunk.RefinedTranscript)) return true;
-        if (string.IsNullOrWhiteSpace(chunk.ChunkSummaryJson)) return false;
+        if (string.IsNullOrWhiteSpace(refinedTranscript)) return true;
+        if (string.IsNullOrWhiteSpace(chunkSummaryJson)) return false;
         try
         {
-            using var document = JsonDocument.Parse(chunk.ChunkSummaryJson);
+            using var document = JsonDocument.Parse(chunkSummaryJson);
             if (document.RootElement.ValueKind == JsonValueKind.Object &&
                 document.RootElement.TryGetProperty("refinementStatus", out var status))
             {
