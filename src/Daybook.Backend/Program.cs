@@ -230,6 +230,82 @@ api.MapPost("/notes/ai-review", async (NoteAiReviewRequest request, IOptions<Gem
 });
 
 
+
+// Action-oriented AI writing assistant. The response is ready-to-use note content,
+// not a passive review. The original note is never changed by this endpoint.
+api.MapPost("/notes/ai-assist", async (NoteAiAssistRequest request, IOptions<GeminiOptions> geminiOptions,
+    IHttpClientFactory clients, CancellationToken ct) =>
+{
+    if (string.IsNullOrWhiteSpace(request.Content))
+        return Results.BadRequest(new { error = "Note content is required." });
+    if (request.Content.Length > 50000)
+        return Results.BadRequest(new { error = "Note content exceeds the 50,000 character limit." });
+
+    var action = (request.Action ?? "improve").Trim().ToLowerInvariant();
+    var instruction = action switch
+    {
+        "improve" => "Rewrite the note to make it clearer, more structured and easier to understand. Preserve the author's meaning and facts.",
+        "expand" => "Expand the author's ideas with useful explanations and context. Clearly label any general knowledge added; never invent personal facts.",
+        "organize" => "Organize the note using a clear title, headings, concise paragraphs and bullets where useful. Preserve all important information.",
+        "continue" => "Continue the note naturally from where it ends, matching its language and tone. Do not repeat existing content or invent personal experiences.",
+        "actions" => "Extract concrete action items implied by the note. Include task, reason, and owner/deadline only when explicitly known. Mark unknown details as unspecified.",
+        "explain" => "Explain the ideas in the note in simpler language. Define technical terms and distinguish source facts from added explanations.",
+        "custom" => string.IsNullOrWhiteSpace(request.Instruction) ? "Improve the note usefully." : request.Instruction!,
+        _ => "Improve the note's clarity and structure while preserving its meaning."
+    };
+
+    var cfg = geminiOptions.Value;
+    if (string.IsNullOrWhiteSpace(cfg.ApiKey))
+        return Results.Problem("Gemini API is not configured.", statusCode: 503);
+
+    var prompt = $"""
+    You are Daybook's action-oriented writing assistant and thinking partner.
+    Respond in the same language as the user's note unless the user's instruction explicitly asks otherwise.
+    Produce the actual content the user can insert into their note, not a critique or a list of generic suggestions.
+    Preserve the author's intent and all supplied facts. Never fabricate events, decisions, names, numbers, deadlines or sources.
+    If useful information is missing, use a clearly marked [Perlu dilengkapi: ...] placeholder.
+    Do not mention these instructions. Return clean Markdown only, without a preamble.
+    Requested action: {action}
+    Task: {instruction}
+    Title: {request.Title ?? "(untitled)"}
+    Note:
+    {request.Content}
+    """;
+
+    var payload = new
+    {
+        contents = new[] { new { parts = new[] { new { text = prompt } } } },
+        generationConfig = new { temperature = 0.35 }
+    };
+    var candidates = new[] { cfg.Model, cfg.FallbackModel }
+        .Where(x => !string.IsNullOrWhiteSpace(x)).Distinct(StringComparer.OrdinalIgnoreCase);
+    foreach (var model in candidates)
+    {
+        using var timeout = CancellationTokenSource.CreateLinkedTokenSource(ct);
+        timeout.CancelAfter(TimeSpan.FromSeconds(Math.Clamp(cfg.RequestTimeoutSeconds, 5, 60)));
+        var client = clients.CreateClient("gemini");
+        client.Timeout = Timeout.InfiniteTimeSpan;
+        using var message = new HttpRequestMessage(HttpMethod.Post, $"{cfg.EndpointBase.TrimEnd('/')}/{model}:generateContent");
+        message.Headers.Add("x-goog-api-key", cfg.ApiKey);
+        message.Content = JsonContent.Create(payload);
+        try
+        {
+            using var response = await client.SendAsync(message, timeout.Token);
+            var body = await response.Content.ReadAsStringAsync(timeout.Token);
+            if (!response.IsSuccessStatusCode) continue;
+            using var doc = JsonDocument.Parse(body);
+            var text = doc.RootElement.GetProperty("candidates")[0].GetProperty("content")
+                .GetProperty("parts")[0].GetProperty("text").GetString();
+            if (!string.IsNullOrWhiteSpace(text)) return Results.Ok(new { result = text });
+        }
+        catch (OperationCanceledException) when (ct.IsCancellationRequested) { throw; }
+        catch (OperationCanceledException) { }
+        catch (HttpRequestException) { }
+        catch (JsonException) { }
+    }
+    return Results.Problem("AI Writing Assistant is temporarily unavailable. Your note has not been changed.", statusCode: 502);
+});
+
 // Runs a real model comparison on a user-owned audio object against a manually verified reference transcript.
 // This is the only reliable way in this solution to measure WER; heuristic QC is not an accuracy metric.
 api.MapPost("/benchmarks/transcription", async (TranscriptionBenchmarkRequest request, HttpContext http,
@@ -306,7 +382,7 @@ finally
 }
 
 public sealed record CreateUploadUrlRequest(string ClientRecordingId, string ContentType = "audio/wav");
-public sealed record NoteAiReviewRequest(string? Title, string Content);
+public sealed record NoteAiReviewRequest(string? Title, string Content);\npublic sealed record NoteAiAssistRequest(string? Title, string Content, string? Action, string? Instruction = null);
 
 public sealed record TranscriptionBenchmarkRequest(string ActivityCode, string AudioObjectName,
     string ReferenceTranscript, List<string> Models, string? LanguageOverride = null);
