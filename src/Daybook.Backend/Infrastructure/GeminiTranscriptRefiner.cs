@@ -1,14 +1,29 @@
+﻿using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
 using Daybook.Backend.Application;
 using Daybook.Backend.Options;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 namespace Daybook.Backend.Infrastructure;
 
-public sealed class GeminiTranscriptRefiner(IHttpClientFactory clients, IOptions<GeminiOptions> options)
+public sealed class GeminiTranscriptRefiner(
+    IHttpClientFactory clients,
+    IOptions<GeminiOptions> options,
+    ILogger<GeminiTranscriptRefiner> logger)
     : ITranscriptRefiner
 {
+    private static readonly HashSet<HttpStatusCode> TransientStatusCodes =
+    [
+        HttpStatusCode.RequestTimeout,
+        HttpStatusCode.TooManyRequests,
+        HttpStatusCode.InternalServerError,
+        HttpStatusCode.BadGateway,
+        HttpStatusCode.ServiceUnavailable,
+        HttpStatusCode.GatewayTimeout
+    ];
+
     public async Task<RefinedChunkResult> RefineChunkAsync(string rawTranscript,
         ActivityProcessingProfile profile, CancellationToken ct)
     {
@@ -44,8 +59,6 @@ public sealed class GeminiTranscriptRefiner(IHttpClientFactory clients, IOptions
         ActivityProcessingProfile profile, CancellationToken ct)
     {
         if (!profile.GenerateMom) return "";
-        // Hierarchical synthesis prevents a long recording's full transcript from being sent
-        // in one Gemini request. First condense batches of at most 10 segment summaries.
         var level = chunkSummaries.Where(x => !string.IsNullOrWhiteSpace(x)).ToList();
         if (level.Count == 0) return "{}";
         while (level.Count > 10)
@@ -85,26 +98,86 @@ public sealed class GeminiTranscriptRefiner(IHttpClientFactory clients, IOptions
         var cfg = options.Value;
         if (string.IsNullOrWhiteSpace(cfg.ApiKey))
             throw new InvalidOperationException("Gemini:ApiKey is not configured.");
-        var endpoint = $"{cfg.EndpointBase.TrimEnd('/')}/{cfg.Model}:generateContent";
+
+        var candidateModels = new[] { cfg.Model, cfg.FallbackModel, "gemini-2.5-flash-lite" }
+            .Where(m => !string.IsNullOrWhiteSpace(m))
+            .Select(m => m.StartsWith("models/", StringComparison.OrdinalIgnoreCase) ? m["models/".Length..] : m)
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToList();
+
         var payload = new
         {
             contents = new[] { new { parts = new[] { new { text = prompt } } } },
             generationConfig = new { responseMimeType = "application/json", temperature = 0.1 }
         };
+
         var client = clients.CreateClient("gemini");
         client.Timeout = TimeSpan.FromMinutes(Math.Max(1, cfg.TimeoutMinutes));
-        using var request = new HttpRequestMessage(HttpMethod.Post, endpoint)
+
+        Exception? lastError = null;
+
+        foreach (var model in candidateModels)
         {
-            Content = JsonContent.Create(payload)
-        };
-        request.Headers.Add("x-goog-api-key", cfg.ApiKey);
-        using var response = await client.SendAsync(request, ct);
-        var body = await response.Content.ReadAsStringAsync(ct);
-        response.EnsureSuccessStatusCode();
-        using var envelope = JsonDocument.Parse(body);
-        var text = envelope.RootElement.GetProperty("candidates")[0].GetProperty("content")
-            .GetProperty("parts")[0].GetProperty("text").GetString() ?? "{}";
-        using var parsed = JsonDocument.Parse(text);
-        return parsed.RootElement.Clone();
+            var endpoint = $"{cfg.EndpointBase.TrimEnd('/')}/{model}:generateContent";
+
+            for (var attempt = 1; attempt <= 2; attempt++)
+            {
+                using var request = new HttpRequestMessage(HttpMethod.Post, endpoint)
+                {
+                    Content = JsonContent.Create(payload)
+                };
+                request.Headers.Add("x-goog-api-key", cfg.ApiKey);
+
+                using var response = await client.SendAsync(request, ct);
+                var body = await response.Content.ReadAsStringAsync(ct);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    using var envelope = JsonDocument.Parse(body);
+                    var text = envelope.RootElement.GetProperty("candidates")[0].GetProperty("content")
+                        .GetProperty("parts")[0].GetProperty("text").GetString() ?? "{}";
+                    using var parsed = JsonDocument.Parse(text);
+                    return parsed.RootElement.Clone();
+                }
+
+                logger.LogWarning(
+                    "Gemini request failed (Model: {Model}, Attempt: {Attempt}, Status: {StatusCode}). Response: {Body}",
+                    model, attempt, (int)response.StatusCode, body);
+
+                lastError = new HttpRequestException(
+                    $"Gemini API error ({(int)response.StatusCode} {response.StatusCode}) on model '{model}': {ExtractGoogleErrorMessage(body)}",
+                    null,
+                    response.StatusCode);
+
+                if (response.StatusCode == HttpStatusCode.NotFound)
+                    break;
+
+                if (TransientStatusCodes.Contains(response.StatusCode) && attempt < 2)
+                {
+                    await Task.Delay(TimeSpan.FromSeconds(attempt * 2), ct);
+                    continue;
+                }
+
+                break;
+            }
+        }
+
+        throw lastError ?? new InvalidOperationException("Gemini generation failed across all candidate models.");
+    }
+
+    private static string ExtractGoogleErrorMessage(string body)
+    {
+        try
+        {
+            using var doc = JsonDocument.Parse(body);
+            if (doc.RootElement.TryGetProperty("error", out var err) &&
+                err.TryGetProperty("message", out var msg))
+            {
+                return msg.GetString() ?? body;
+            }
+        }
+        catch { }
+
+        return body.Length > 300 ? body[..300] : body;
     }
 }
