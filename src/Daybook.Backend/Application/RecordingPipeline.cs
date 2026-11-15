@@ -139,7 +139,7 @@ public sealed class RecordingPipeline(
         // Give each optional Gemini operation its own bounded budget. A single slow
         // chunk must not consume the time reserved for every later chunk or final MoM.
         var aiTimedOut = false;
-        const int refinementTimeoutSeconds = 45;
+        const int refinementTimeoutSeconds = 90;
 
         // Refine each chunk independently. A long recording is never sent as one oversized prompt.
         // If one chunk times out, keep its raw text and continue with the remaining chunks.
@@ -216,7 +216,7 @@ public sealed class RecordingPipeline(
         if (profile.GenerateMom)
         {
             using var momCts = CancellationTokenSource.CreateLinkedTokenSource(ct);
-            momCts.CancelAfter(TimeSpan.FromSeconds(45));
+            momCts.CancelAfter(TimeSpan.FromSeconds(90));
             try
             {
                 job.MomJson = await refiner.GenerateFinalMomAsync(summaries, profile, momCts.Token);
@@ -229,7 +229,7 @@ public sealed class RecordingPipeline(
             {
                 needsReview = true;
                 aiTimedOut = true;
-                logger.LogWarning("Gemini MoM exceeded its independent 45-second budget for {RecordingId}; transcript remains available.", job.Id);
+                logger.LogWarning("Gemini MoM exceeded its independent 90-second budget for {RecordingId}; transcript remains available.", job.Id);
             }
             catch (Exception ex)
             {
