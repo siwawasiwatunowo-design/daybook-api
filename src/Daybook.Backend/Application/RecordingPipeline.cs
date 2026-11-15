@@ -119,6 +119,17 @@ public sealed class RecordingPipeline(
                 await jobs.UpdateChunkAsync(chunk, ct);
                 throw;
             }
+            if (aiTimedOut) break;
+        }
+
+        if (aiTimedOut)
+        {
+            foreach (var pendingChunk in chunks.Where(x => !string.IsNullOrWhiteSpace(x.RawTranscript) && string.IsNullOrWhiteSpace(x.RefinedTranscript)))
+            {
+                pendingChunk.RefinedTranscript = pendingChunk.RawTranscript;
+                pendingChunk.ChunkSummaryJson = JsonSerializer.Serialize(new { summary = pendingChunk.RawTranscript, refinementStatus = "skipped_after_timeout" });
+                await jobs.UpdateChunkAsync(pendingChunk, ct);
+            }
         }
 
         chunks = await jobs.GetChunksAsync(job.Id, ct);
@@ -126,6 +137,18 @@ public sealed class RecordingPipeline(
             .Select(x => x.RawTranscript));
         if (string.IsNullOrWhiteSpace(rawTranscript))
             throw new InvalidOperationException("STT returned an empty transcript for all chunks.");
+
+        // Persist successful STT before optional AI processing so the raw transcript is available early.
+        job.RawTranscript = rawTranscript;
+        job.UpdatedAt = DateTimeOffset.UtcNow;
+        await jobs.UpdateJobAsync(job, ct);
+        await publisher.PublishAsync(job, chunks.Count, chunks.Count(x => x.Status == ChunkStatus.Completed), chunks, ct);
+
+        // Bound all optional Gemini work for this recording. Provider retries must not
+        // leave a successful STT job in Processing for several minutes.
+        using var aiCts = CancellationTokenSource.CreateLinkedTokenSource(ct);
+        aiCts.CancelAfter(TimeSpan.FromSeconds(45));
+        var aiTimedOut = false;
 
         // Refine each chunk independently. A 12-hour transcript is never sent to Gemini
         // as one oversized prompt; only compact segment summaries enter final MoM synthesis.
@@ -143,13 +166,21 @@ public sealed class RecordingPipeline(
                 {
                     try
                     {
-                        var refinedChunk = await refiner.RefineChunkAsync(chunk.RawTranscript, profile, ct);
+                        var refinedChunk = await refiner.RefineChunkAsync(chunk.RawTranscript, profile, aiCts.Token);
                         chunk.RefinedTranscript = refinedChunk.RefinedTranscript;
                         chunk.ChunkSummaryJson = refinedChunk.ChunkSummaryJson;
                     }
                     catch (OperationCanceledException) when (ct.IsCancellationRequested)
                     {
                         throw;
+                    }
+                    catch (OperationCanceledException) when (aiCts.IsCancellationRequested)
+                    {
+                        aiTimedOut = true;
+                        needsReview = true;
+                        logger.LogWarning("Gemini processing exceeded the 45-second budget for {RecordingId}; keeping raw transcript.", job.Id);
+                        chunk.RefinedTranscript = chunk.RawTranscript;
+                        chunk.ChunkSummaryJson = JsonSerializer.Serialize(new { summary = chunk.RawTranscript, refinementStatus = "timeout" });
                     }
                     catch (Exception ex)
                     {
@@ -186,15 +217,21 @@ public sealed class RecordingPipeline(
         await publisher.PublishAsync(job, chunks.Count, chunks.Count(x => x.Status == ChunkStatus.Completed), chunks, ct);
 
         job.MomJson = "";
-        if (profile.GenerateMom)
+        if (profile.GenerateMom && !aiTimedOut)
         {
             try
             {
-                job.MomJson = await refiner.GenerateFinalMomAsync(summaries, profile, ct);
+                job.MomJson = await refiner.GenerateFinalMomAsync(summaries, profile, aiCts.Token);
             }
             catch (OperationCanceledException) when (ct.IsCancellationRequested)
             {
                 throw;
+            }
+            catch (OperationCanceledException) when (aiCts.IsCancellationRequested)
+            {
+                needsReview = true;
+                aiTimedOut = true;
+                logger.LogWarning("Gemini MoM exceeded the 45-second budget for {RecordingId}; transcript remains available.", job.Id);
             }
             catch (Exception ex)
             {
@@ -208,7 +245,9 @@ public sealed class RecordingPipeline(
 
         job.Status = needsReview ? JobStatus.NeedsReview : JobStatus.Completed;
         job.ErrorMessage = needsReview
-            ? "Transcript is available, but one or more quality checks or AI refinement/MoM steps need review."
+            ? aiTimedOut
+                ? "Transcript is available. Optional Gemini processing exceeded the 45-second time budget; raw transcript was kept."
+                : "Transcript is available, but one or more quality checks or AI refinement/MoM steps need review."
             : null;
         job.CompletedAt = DateTimeOffset.UtcNow;
         await jobs.UpdateJobAsync(job, ct);
