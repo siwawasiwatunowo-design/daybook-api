@@ -164,6 +164,72 @@ api.MapGet("/recordings/{id:guid}", async (Guid id, HttpContext http, IJobReposi
 api.MapGet("/activity-profiles", async (IActivityProfileProvider profiles, CancellationToken ct) =>
     Results.Ok(await profiles.GetAllAsync(ct)));
 
+// AI review for a user-authored note. Gemini credentials remain server-side.
+// The client must explicitly request this action; note content is not uploaded on autosave.
+api.MapPost("/notes/ai-review", async (NoteAiReviewRequest request, IOptions<GeminiOptions> geminiOptions,
+    IHttpClientFactory clients, CancellationToken ct) =>
+{
+    if (string.IsNullOrWhiteSpace(request.Content))
+        return Results.BadRequest(new { error = "Note content is required." });
+    if (request.Content.Length > 50000)
+        return Results.BadRequest(new { error = "Note content exceeds the 50,000 character limit." });
+
+    var cfg = geminiOptions.Value;
+    if (string.IsNullOrWhiteSpace(cfg.ApiKey))
+        return Results.Problem("Gemini API is not configured.", statusCode: 503);
+
+    var prompt = $"""
+    You are Daybook's personal note reviewer. Review the following user note.
+    Respond in the same language as the note. Be constructive, concise, and specific.
+    Do not invent facts or assume the note is a meeting transcript.
+    Return Markdown with these sections:
+    1. Ringkasan singkat
+    2. Hal penting / insight
+    3. Saran pengembangan atau pertanyaan refleksi
+    4. Action items (only if the note implies actions)
+    If a section is not relevant, omit it.
+    Title: {request.Title ?? "(untitled)"}
+    Note:
+    {request.Content}
+    """;
+
+    var payload = new
+    {
+        contents = new[] { new { parts = new[] { new { text = prompt } } } },
+        generationConfig = new { temperature = 0.3 }
+    };
+
+    var candidates = new[] { cfg.Model, cfg.FallbackModel }
+        .Where(x => !string.IsNullOrWhiteSpace(x)).Distinct(StringComparer.OrdinalIgnoreCase);
+    foreach (var model in candidates)
+    {
+        using var timeout = CancellationTokenSource.CreateLinkedTokenSource(ct);
+        timeout.CancelAfter(TimeSpan.FromSeconds(Math.Clamp(cfg.RequestTimeoutSeconds, 5, 60)));
+        var client = clients.CreateClient("gemini");
+        client.Timeout = Timeout.InfiniteTimeSpan;
+        using var message = new HttpRequestMessage(HttpMethod.Post,
+            $"{cfg.EndpointBase.TrimEnd('/')}/{model}:generateContent");
+        message.Headers.Add("x-goog-api-key", cfg.ApiKey);
+        message.Content = JsonContent.Create(payload);
+        try
+        {
+            using var response = await client.SendAsync(message, timeout.Token);
+            var body = await response.Content.ReadAsStringAsync(timeout.Token);
+            if (!response.IsSuccessStatusCode) continue;
+            using var doc = JsonDocument.Parse(body);
+            var text = doc.RootElement.GetProperty("candidates")[0].GetProperty("content")
+                .GetProperty("parts")[0].GetProperty("text").GetString();
+            if (!string.IsNullOrWhiteSpace(text)) return Results.Ok(new { review = text });
+        }
+        catch (OperationCanceledException) when (ct.IsCancellationRequested) { throw; }
+        catch (OperationCanceledException) { }
+        catch (HttpRequestException) { }
+        catch (JsonException) { }
+    }
+    return Results.Problem("AI Review is temporarily unavailable. Your note has not been changed.", statusCode: 502);
+});
+
+
 // Runs a real model comparison on a user-owned audio object against a manually verified reference transcript.
 // This is the only reliable way in this solution to measure WER; heuristic QC is not an accuracy metric.
 api.MapPost("/benchmarks/transcription", async (TranscriptionBenchmarkRequest request, HttpContext http,
@@ -240,6 +306,7 @@ finally
 }
 
 public sealed record CreateUploadUrlRequest(string ClientRecordingId, string ContentType = "audio/wav");
+public sealed record NoteAiReviewRequest(string? Title, string Content);
 
 public sealed record TranscriptionBenchmarkRequest(string ActivityCode, string AudioObjectName,
     string ReferenceTranscript, List<string> Models, string? LanguageOverride = null);
