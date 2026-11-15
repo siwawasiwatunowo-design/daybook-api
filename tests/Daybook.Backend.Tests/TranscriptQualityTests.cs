@@ -54,4 +54,42 @@ public sealed class TranscriptQualityTests
         Assert.True(quality.IsSuspicious);
         Assert.Contains(quality.Reasons, x => x.Contains("repeated", StringComparison.OrdinalIgnoreCase));
     }
+    [Theory]
+    [InlineData("id", "Indonesian")]
+    [InlineData("id-ID", "ind")]
+    [InlineData("en-US", "English")]
+    [InlineData("ja", "Japanese")]
+    public void QualityChecker_DoesNotFlagEquivalentLanguageNames(string configured, string detected)
+    {
+        var profile = new ActivityProcessingProfile { Language = configured };
+        var result = new SttTranscriptionResult("ini adalah contoh kalimat untuk pengujian",
+            "whisper-large-v3", detected, null, 5, Array.Empty<SttSegmentResult>());
+        var quality = new HeuristicTranscriptQualityChecker().Check(result, profile);
+        Assert.DoesNotContain(quality.Reasons, x => x.Contains("differs from configured language"));
+    }
+
+    [Fact]
+    public void QualityChecker_FlagsCannedIndonesianOutro()
+    {
+        var profile = new ActivityProcessingProfile { Language = "id" };
+        var result = new SttTranscriptionResult("Terima kasih telah menonton.",
+            "whisper-large-v3", "Indonesian", null, 18.68,
+            new[] { new SttSegmentResult("Terima kasih telah menonton.", -0.465776,
+                0.0129852295, 0.7837838, 0, 18.68) });
+        var quality = new HeuristicTranscriptQualityChecker().Check(result, profile);
+        Assert.True(quality.IsSuspicious);
+        Assert.Contains(quality.Reasons, x => x.Contains("canned", StringComparison.OrdinalIgnoreCase));
+        Assert.DoesNotContain(quality.Reasons, x => x.Contains("differs from configured language"));
+    }
+
+    [Fact]
+    public void QualityChecker_AppliesLowDensityCheckToShortRecordings()
+    {
+        var profile = new ActivityProcessingProfile { MinSpeechWordsPerMinute = 20 };
+        var result = new SttTranscriptionResult("ini contoh", "whisper-large-v3",
+            "Indonesian", null, 18.68, Array.Empty<SttSegmentResult>());
+        var quality = new HeuristicTranscriptQualityChecker().Check(result, profile);
+        Assert.Contains(quality.Reasons, x => x.Contains("density", StringComparison.OrdinalIgnoreCase));
+    }
+
 }
