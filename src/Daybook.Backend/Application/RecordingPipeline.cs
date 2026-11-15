@@ -141,9 +141,32 @@ public sealed class RecordingPipeline(
                 }
                 else
                 {
-                    var refinedChunk = await refiner.RefineChunkAsync(chunk.RawTranscript, profile, ct);
-                    chunk.RefinedTranscript = refinedChunk.RefinedTranscript;
-                    chunk.ChunkSummaryJson = refinedChunk.ChunkSummaryJson;
+                    try
+                    {
+                        var refinedChunk = await refiner.RefineChunkAsync(chunk.RawTranscript, profile, ct);
+                        chunk.RefinedTranscript = refinedChunk.RefinedTranscript;
+                        chunk.ChunkSummaryJson = refinedChunk.ChunkSummaryJson;
+                    }
+                    catch (OperationCanceledException) when (ct.IsCancellationRequested)
+                    {
+                        throw;
+                    }
+                    catch (Exception ex)
+                    {
+                        // Gemini is an optional enhancement. Preserve the successful STT result
+                        // and allow the recording job to complete even when the AI provider is down.
+                        logger.LogWarning(ex,
+                            "Gemini refinement failed for chunk {ChunkId} in recording {RecordingId}; keeping raw transcript.",
+                            chunk.Id, job.Id);
+                        needsReview = true;
+                        chunk.RefinedTranscript = chunk.RawTranscript;
+                        chunk.ChunkSummaryJson = JsonSerializer.Serialize(new
+                        {
+                            summary = chunk.RawTranscript,
+                            refinementStatus = "failed",
+                            refinementError = ex.Message
+                        });
+                    }
                 }
                 await jobs.UpdateChunkAsync(chunk, ct);
             }
@@ -162,11 +185,31 @@ public sealed class RecordingPipeline(
         await jobs.UpdateJobAsync(job, ct);
         await publisher.PublishAsync(job, chunks.Count, chunks.Count(x => x.Status == ChunkStatus.Completed), chunks, ct);
 
-        job.MomJson = profile.GenerateMom
-            ? await refiner.GenerateFinalMomAsync(summaries, profile, ct)
-            : "";
+        job.MomJson = "";
+        if (profile.GenerateMom)
+        {
+            try
+            {
+                job.MomJson = await refiner.GenerateFinalMomAsync(summaries, profile, ct);
+            }
+            catch (OperationCanceledException) when (ct.IsCancellationRequested)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                // MoM generation is also optional; do not lose a completed transcript.
+                logger.LogWarning(ex,
+                    "Gemini MoM generation failed for recording {RecordingId}; transcript remains available.",
+                    job.Id);
+                needsReview = true;
+            }
+        }
+
         job.Status = needsReview ? JobStatus.NeedsReview : JobStatus.Completed;
-        job.ErrorMessage = needsReview ? "One or more chunks triggered transcript quality checks. Review the transcript before relying on it." : null;
+        job.ErrorMessage = needsReview
+            ? "Transcript is available, but one or more quality checks or AI refinement/MoM steps need review."
+            : null;
         job.CompletedAt = DateTimeOffset.UtcNow;
         await jobs.UpdateJobAsync(job, ct);
         await publisher.PublishAsync(job, chunks.Count, chunks.Count(x => x.Status == ChunkStatus.Completed), chunks, ct);
