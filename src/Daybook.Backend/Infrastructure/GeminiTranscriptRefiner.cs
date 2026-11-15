@@ -1,6 +1,7 @@
 ﻿using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
+using System.Diagnostics;
 using Daybook.Backend.Application;
 using Daybook.Backend.Options;
 using Microsoft.Extensions.Logging;
@@ -120,7 +121,9 @@ public sealed class GeminiTranscriptRefiner(
         {
             var endpoint = $"{cfg.EndpointBase.TrimEnd('/')}/{model}:generateContent";
 
-            for (var attempt = 1; attempt <= 2; attempt++)
+            // One request per model: retrying a slow model twice before trying fallback
+            // can consume the entire caller timeout without producing a transcript.
+            for (var attempt = 1; attempt <= 1; attempt++)
             {
                 using var request = new HttpRequestMessage(HttpMethod.Post, endpoint)
                 {
@@ -129,6 +132,7 @@ public sealed class GeminiTranscriptRefiner(
                 request.Headers.Add("x-goog-api-key", cfg.ApiKey);
 
                 HttpResponseMessage response;
+                var requestTimer = Stopwatch.StartNew();
                 try
                 {
                     response = await client.SendAsync(request, ct);
@@ -140,7 +144,7 @@ public sealed class GeminiTranscriptRefiner(
                 catch (TaskCanceledException ex)
                 {
                     lastError = new TimeoutException($"Gemini request timed out for model '{model}' on attempt {attempt}.", ex);
-                    logger.LogWarning(ex, "Gemini request timed out (Model: {Model}, Attempt: {Attempt}).", model, attempt);
+                    logger.LogWarning(ex, "Gemini request timed out (Model: {Model}, Attempt: {Attempt}, ElapsedMs: {ElapsedMs}, PromptChars: {PromptChars}).", model, attempt, requestTimer.ElapsedMilliseconds, prompt.Length);
                     if (attempt < 2)
                     {
                         await Task.Delay(TimeSpan.FromSeconds(attempt * 2), ct);
@@ -151,7 +155,7 @@ public sealed class GeminiTranscriptRefiner(
                 catch (HttpRequestException ex)
                 {
                     lastError = ex;
-                    logger.LogWarning(ex, "Gemini transport error (Model: {Model}, Attempt: {Attempt}).", model, attempt);
+                    logger.LogWarning(ex, "Gemini transport error (Model: {Model}, Attempt: {Attempt}, ElapsedMs: {ElapsedMs}, PromptChars: {PromptChars}).", model, attempt, requestTimer.ElapsedMilliseconds, prompt.Length);
                     if (attempt < 2)
                     {
                         await Task.Delay(TimeSpan.FromSeconds(attempt * 2), ct);
@@ -160,6 +164,8 @@ public sealed class GeminiTranscriptRefiner(
                     break;
                 }
 
+                requestTimer.Stop();
+                logger.LogInformation("Gemini response received (Model: {Model}, Status: {StatusCode}, ElapsedMs: {ElapsedMs}, PromptChars: {PromptChars}).", model, (int)response.StatusCode, requestTimer.ElapsedMilliseconds, prompt.Length);
                 using var responseScope = response;
                 var body = await response.Content.ReadAsStringAsync(ct);
 
