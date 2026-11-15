@@ -160,7 +160,7 @@ public sealed class GeminiTranscriptRefiner(
                     break;
                 }
 
-                using (response)
+                using var responseScope = response;
                 var body = await response.Content.ReadAsStringAsync(ct);
 
                 if (response.IsSuccessStatusCode)
