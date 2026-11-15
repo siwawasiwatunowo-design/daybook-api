@@ -143,6 +143,103 @@ Important behavior:
 - A 503 from Gemini indicates temporary model/service unavailability; a successful model-list response is not a substitute for a direct `generateContent` test.
 - Do not repeatedly retry while a provider quota is exhausted.
 
+
+## Daybook product overview — how the app works
+
+This backend is one part of the Daybook Android application. Daybook has five main tabs:
+
+| Tab | Purpose | Current data location |
+|---|---|---|
+| **Timebox** | Plan a day using time blocks and mark them done | Firebase Cloud Firestore |
+| **Notes** | Personal notes, journal, learning notes, thoughts and ideas; rich-text editor and auto-save | Firebase Cloud Firestore |
+| **Dreams** | Record dreams with date, type and sleep-quality rating | Firebase Cloud Firestore |
+| **Bucket list** | Track life goals by category and status (Dream / Planned / Done) | Firebase Cloud Firestore |
+| **Rekam (Recordings)** | Record meetings, mark important/confusing moments, process audio into a timed transcript and meeting summary | Audio and recording metadata/transcript are stored locally on Android; processing is delegated to this backend |
+
+Authentication uses Firebase Authentication (email/password). The signed-in Firebase UID scopes Firestore entries. The recording API separately validates the Firebase ID token before accepting upload, job-creation and status requests.
+
+### High-level app and backend flow
+
+```mermaid
+flowchart TD
+  USER[User opens Daybook Android] --> AUTH[Firebase Authentication]
+  AUTH --> HOME[Home: Timebox / Notes / Dreams / Bucket list / Rekam]
+  HOME --> CRUD[Timebox, Notes, Dreams, Bucket list]
+  CRUD <--> FS[(Cloud Firestore users/{uid}/entries/{entryId})]
+  HOME --> REC[Rekam tab]
+  REC --> MIC[Foreground RecordingService captures microphone]
+  MIC --> LOCAL[(Android private app storage: audio chunks + index.json + marks)]
+  LOCAL --> STOP[Stop recording]
+  STOP --> WM[Android WorkManager: SttWorker]
+  WM --> TOKEN[Get Firebase ID token]
+  TOKEN --> API[Local .NET 10 Daybook API]
+  API --> SIGN[Validate Firebase token]
+  SIGN --> URL[POST /api/recordings/upload-url]
+  URL --> S3URL[Return short-lived presigned URL]
+  S3URL --> PUT[Android PUT audio bytes directly]
+  PUT --> OBJ[(Neon S3-compatible Object Storage)]
+  WM --> CREATE[POST /api/recordings]
+  CREATE --> DB[(Neon PostgreSQL: job + chunk records)]
+  CREATE --> WORKER[Local BackgroundService polls queued jobs]
+  WORKER --> OBJ
+  WORKER --> CHUNK[Prepare audio and split into 8-minute chunks]
+  CHUNK --> GROQ[Groq Whisper STT]
+  GROQ --> RAW[Persist raw transcript + checkpoints]
+  RAW --> GEM[Gemini chunk refinement + summaries]
+  GEM --> STITCH[Stitch refined transcript]
+  STITCH --> MOM[Generate final MoM from chunk summaries]
+  MOM --> SAVE[Persist transcript + MoM + job status]
+  SAVE --> STATUS[GET /api/recordings/{id}]
+  STATUS --> ANDROID[SttWorker polls and saves results locally]
+  ANDROID --> RESULT[Result screen: MoM + timed transcript + audio playback]
+  RESULT --> CHOICE{User chooses}
+  CHOICE -->|Copy / Share| SHARE[Share text]
+  CHOICE -->|Save to Notes| NOTE[Explicitly create a Notes entry]
+  NOTE --> FS
+```
+
+### Recording journey, step by step
+
+1. **Start recording.** In the Rekam tab, the Android foreground service captures microphone audio. The recording is stored under the app's private files directory, not the cache directory. The UI shows elapsed time and an audio-level indicator, with Bingung and Penting mark actions. Stop requires confirmation.
+2. **Local recording data.** Android RecordingRepository maintains recording metadata, chunk metadata, marks, transcript segments and processing state in an atomically written index.json. Audio chunk files remain in the app's private recording directory. The recording is not automatically deleted after processing.
+3. **Queue processing.** After recording is finalized, Android WorkManager runs one unique SttWorker for that recording. It prepares WAV audio from the local chunks. A signed-in Firebase user and internet access are required for cloud transcription.
+4. **Request upload authorization.** Android sends its Firebase ID token to POST /api/recordings/upload-url, with a client recording ID and content type. The API returns a short-lived presigned URL and object name.
+5. **Upload audio.** Android uploads WAV bytes directly to the presigned Neon Object Storage URL using HTTP PUT. The audio payload does not pass through the .NET API server.
+6. **Create processing job.** Android calls POST /api/recordings with the object name, duration, activity code (currently GENERAL_MEETING) and language override (currently id). The API creates a queued job in PostgreSQL and returns its job ID.
+7. **Server-side processing.** The local .NET BackgroundService polls PostgreSQL, retrieves the audio object, prepares 8-minute chunks, and calls Groq Whisper for speech-to-text. Each chunk is checkpointed so completed work can be retained across retries.
+8. **AI refinement and MoM.** The backend persists raw transcript first. Gemini optionally refines each chunk and produces chunk summaries; the backend stitches refined text and generates the final MoM from chunk summaries. If Gemini times out or fails, raw STT text remains available and the job can finish in a review-needed state rather than losing the transcript.
+9. **Return results to the phone.** Android polls GET /api/recordings/{id} approximately every three seconds (up to the worker's configured polling window). On Completed or NeedsReview, the app stores returned transcript segments and MoM in its local recording repository.
+10. **Review and reuse.** The result screen displays MoM (when available) and timed transcript. Tapping a transcript segment seeks the local audio player to that moment. The user can copy/share text or explicitly choose Simpan ke Notes. Only the text is copied into a new Firestore Notes entry; the original recording remains on the phone.
+
+### Data ownership and privacy boundaries
+
+| Data | Primary location | Cloud behavior |
+|---|---|---|
+| Timebox / Notes / Dreams / Bucket list entries | Firestore under signed-in user's UID | Synced through Firebase |
+| Original meeting audio | Android private app storage | Uploaded as a processing copy to Neon Object Storage when cloud transcription is requested |
+| Processing audio object | Neon Object Storage bucket daybook-audio | Backend reads it for processing |
+| Raw/refined transcript, chunk summaries, MoM, job status | Neon PostgreSQL | Stored by backend |
+| Returned transcript and MoM | Android private app storage / RecordingRepository | Retrieved from backend; not automatically written to Firestore |
+| Notes created with Simpan ke Notes | Firestore | Saved only after explicit user action |
+| Firebase ID token | Android Authorization header to API | Used to authenticate API requests; must not be logged or persisted |
+
+**Important distinction:** ordinary Notes/Timebox/Dreams/Bucket list data syncs through Firestore. Recording history, audio, transcript and MoM are kept in the Android local recording repository unless the user explicitly saves the text as a Note. The backend also stores the processing job, transcript and MoM in Neon PostgreSQL. The current result screen says audio remains on the phone after processing; an upload copy is stored in Neon Object Storage for cloud processing.
+
+### Current deployment boundary
+
+The Android app and Firebase/Neon/Groq/Gemini services are not all running on the laptop. The .NET API and its BackgroundService worker are currently hosted by the developer's Windows laptop. Neon PostgreSQL and Neon Object Storage, Firebase, Groq and Gemini are external cloud services. Android reaches the laptop-hosted API through ngrok during development. Turning off or sleeping the laptop stops job processing, even though the uploaded object and queued job remain in their cloud services.
+
+### Source references
+
+- Android app repository: https://github.com/siwawasiwatunowo-design/daybook
+- Android API client: app/src/main/java/com/example/daybook/DaybookApiClient.kt
+- Android cloud processing worker: app/src/main/java/com/example/daybook/SttWorker.kt
+- Android recording repository/service: RecordingRepository.kt and RecordingService.kt
+- Android result UI: RecordingResultScreen.kt
+- Backend architecture: docs/ARCHITECTURE.md
+
+> **Documentation alignment note:** the Android repository's SYSTEM_FLOW.md contains earlier design/phase notes, including proposed local Vosk and local-only recording flows. The currently integrated cloud transcription path is described here from the active DaybookApiClient.kt and SttWorker.kt implementation. Treat older phase/status tables as historical unless revalidated against current code.
+
 ## Architecture and API references
 
 - .NET 10 Minimal API + PostgreSQL polling BackgroundService (same local process).
