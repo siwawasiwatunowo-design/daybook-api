@@ -14,6 +14,11 @@ public sealed class HeuristicTranscriptQualityChecker : ITranscriptQualityChecke
         var reasons = new List<string>();
         var words = WordRegex.Matches(result.Text ?? "").Select(x => x.Value.ToLowerInvariant()).ToArray();
         if (words.Length < 3) reasons.Add("Transcript is empty or unusually short.");
+        var normalizedText = string.Join(" ", words);
+        if (normalizedText.Contains("terima kasih telah menonton", StringComparison.Ordinal) ||
+            normalizedText.Contains("thanks for watching", StringComparison.Ordinal) ||
+            normalizedText.Contains("thank you for watching", StringComparison.Ordinal))
+            reasons.Add("Transcript matches a common canned speech-recognition hallucination phrase; verify against audio.");
 
         var adjacentRepeated = 0;
         for (var i = 1; i < words.Length; i++) if (words[i] == words[i - 1]) adjacentRepeated++;
@@ -28,7 +33,7 @@ public sealed class HeuristicTranscriptQualityChecker : ITranscriptQualityChecke
         var duration = result.DurationSeconds ?? result.Segments.Where(s => s.EndSeconds.HasValue)
             .Select(s => s.EndSeconds!.Value).DefaultIfEmpty(0).Max();
         var wpm = duration > 0 ? words.Length / (duration / 60d) : 0;
-        if (duration >= 30 && wpm < profile.MinSpeechWordsPerMinute)
+        if (duration >= 8 && wpm < profile.MinSpeechWordsPerMinute)
             reasons.Add($"Transcript density is unusually low ({wpm:F1} words/minute); check silence/VAD/audio.");
 
         var avgLogProb = Average(result.Segments.Select(s => s.AverageLogProbability));
@@ -61,13 +66,34 @@ public sealed class HeuristicTranscriptQualityChecker : ITranscriptQualityChecke
             !profile.Language.Equals("automatic", StringComparison.OrdinalIgnoreCase) &&
             !SameLanguage(profile.Language, result.DetectedLanguage)) score -= 20;
         if (words.Length < 3) score = 0;
+        score -= reasons.Count * 8;
         return new TranscriptQualityResult(reasons.Count > 0, reasons.ToArray(), repeatedRatio,
             repeatedNgramRatio, wpm, avgLogProb, noSpeech, compression,
             result.LanguageProbability, Math.Clamp(score, 0, 100));
     }
 
-    private static bool SameLanguage(string configured, string detected) =>
-        configured.Split('-', '_')[0].Equals(detected.Split('-', '_')[0], StringComparison.OrdinalIgnoreCase);
+    private static bool SameLanguage(string configured, string detected)
+    {
+        static string Canonical(string value)
+        {
+            var primary = value.Trim().Replace('_', '-').Split('-')[0].ToLowerInvariant();
+            return primary switch
+            {
+                "id" or "ind" or "indonesian" => "id",
+                "en" or "eng" or "english" => "en",
+                "ja" or "jpn" or "japanese" => "ja",
+                "zh" or "zho" or "chi" or "chinese" => "zh",
+                "ko" or "kor" or "korean" => "ko",
+                "ms" or "msa" or "may" or "malay" => "ms",
+                "ar" or "ara" or "arabic" => "ar",
+                "fr" or "fra" or "fre" or "french" => "fr",
+                "de" or "deu" or "ger" or "german" => "de",
+                "es" or "spa" or "spanish" => "es",
+                _ => primary
+            };
+        }
+        return Canonical(configured) == Canonical(detected);
+    }
 
     private static double RepeatedNgramRatio(string[] words, int n)
     {
