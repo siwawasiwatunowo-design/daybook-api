@@ -100,7 +100,7 @@ public sealed class GeminiTranscriptRefiner(
         if (string.IsNullOrWhiteSpace(cfg.ApiKey))
             throw new InvalidOperationException("Gemini:ApiKey is not configured.");
 
-        var candidateModels = new[] { cfg.Model, cfg.FallbackModel, "gemini-2.5-flash-lite" }
+        var candidateModels = new[] { cfg.Model, cfg.FallbackModel }
             .Where(m => !string.IsNullOrWhiteSpace(m))
             .Select(m => m.StartsWith("models/", StringComparison.OrdinalIgnoreCase) ? m["models/".Length..] : m)
             .Distinct(StringComparer.OrdinalIgnoreCase)
@@ -113,7 +113,9 @@ public sealed class GeminiTranscriptRefiner(
         };
 
         var client = clients.CreateClient("gemini");
-        client.Timeout = TimeSpan.FromMinutes(Math.Max(1, cfg.TimeoutMinutes));
+        // Per-model timeout leaves time for the configured fallback to run.
+        client.Timeout = Timeout.InfiniteTimeSpan;
+        var modelTimeout = TimeSpan.FromSeconds(Math.Clamp(cfg.RequestTimeoutSeconds, 5, 60));
 
         Exception? lastError = null;
 
@@ -123,7 +125,7 @@ public sealed class GeminiTranscriptRefiner(
 
             // One request per model: retrying a slow model twice before trying fallback
             // can consume the entire caller timeout without producing a transcript.
-            for (var attempt = 1; attempt <= 1; attempt++)
+            for (var attempt = 1; attempt <= 2; attempt++)
             {
                 using var request = new HttpRequestMessage(HttpMethod.Post, endpoint)
                 {
@@ -133,23 +135,20 @@ public sealed class GeminiTranscriptRefiner(
 
                 HttpResponseMessage response;
                 var requestTimer = Stopwatch.StartNew();
+                using var requestCts = CancellationTokenSource.CreateLinkedTokenSource(ct);
+                requestCts.CancelAfter(modelTimeout);
                 try
                 {
-                    response = await client.SendAsync(request, ct);
+                    response = await client.SendAsync(request, requestCts.Token);
                 }
                 catch (OperationCanceledException) when (ct.IsCancellationRequested)
                 {
                     throw;
                 }
-                catch (TaskCanceledException ex)
+                catch (OperationCanceledException ex) when (requestCts.IsCancellationRequested)
                 {
-                    lastError = new TimeoutException($"Gemini request timed out for model '{model}' on attempt {attempt}.", ex);
-                    logger.LogWarning(ex, "Gemini request timed out (Model: {Model}, Attempt: {Attempt}, ElapsedMs: {ElapsedMs}, PromptChars: {PromptChars}).", model, attempt, requestTimer.ElapsedMilliseconds, prompt.Length);
-                    if (attempt < 2)
-                    {
-                        await Task.Delay(TimeSpan.FromSeconds(attempt * 2), ct);
-                        continue;
-                    }
+                    lastError = new TimeoutException($"Gemini request exceeded {modelTimeout.TotalSeconds:0}s for model '{model}' on attempt {attempt}.", ex);
+                    logger.LogWarning(ex, "Gemini per-model timeout (Model: {Model}, Attempt: {Attempt}, TimeoutSeconds: {TimeoutSeconds}, ElapsedMs: {ElapsedMs}, PromptChars: {PromptChars}).", model, attempt, modelTimeout.TotalSeconds, requestTimer.ElapsedMilliseconds, prompt.Length);
                     break;
                 }
                 catch (HttpRequestException ex)
