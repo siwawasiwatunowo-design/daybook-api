@@ -119,17 +119,6 @@ public sealed class RecordingPipeline(
                 await jobs.UpdateChunkAsync(chunk, ct);
                 throw;
             }
-            if (aiTimedOut) break;
-        }
-
-        if (aiTimedOut)
-        {
-            foreach (var pendingChunk in chunks.Where(x => !string.IsNullOrWhiteSpace(x.RawTranscript) && string.IsNullOrWhiteSpace(x.RefinedTranscript)))
-            {
-                pendingChunk.RefinedTranscript = pendingChunk.RawTranscript;
-                pendingChunk.ChunkSummaryJson = JsonSerializer.Serialize(new { summary = pendingChunk.RawTranscript, refinementStatus = "skipped_after_timeout" });
-                await jobs.UpdateChunkAsync(pendingChunk, ct);
-            }
         }
 
         chunks = await jobs.GetChunksAsync(job.Id, ct);
