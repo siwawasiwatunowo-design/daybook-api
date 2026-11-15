@@ -4,15 +4,45 @@ This revision targets **Windows 10 + 8 GB RAM, no Docker, and $0/month provider 
 
 > Important: Firebase Cloud Storage is deliberately not used. Firebase now requires the Blaze billing plan to access Storage buckets. Audio upload uses Neon Object Storage with S3 presigned URLs, so the Android upload implementation must be changed accordingly.
 
+## Prerequisites — install these first
+
+| Tool | Version | Install |
+|------|---------|---------|
+| .NET SDK | 10+ | [dot.net/download](https://dotnet.microsoft.com/download) |
+| FFmpeg + FFprobe | latest | `scoop install ffmpeg` **or** `winget install Gyan.FFmpeg` |
+
+> **Scoop users:** FFmpeg will land in `%USERPROFILE%\scoop\shims\` — `run-dev.bat` already adds this to PATH automatically.
+
 ## Start here
 
 1. Follow [`docs/FREE-SETUP-WINDOWS.md`](docs/FREE-SETUP-WINDOWS.md) in order.
-2. Install .NET 10 SDK and FFmpeg/FFprobe.
+2. Install prerequisites above (.NET 10 SDK + FFmpeg).
 3. Create Neon Free database + private `daybook-audio` Object Storage bucket in Singapore.
 4. Create Groq and Gemini API keys; configure Firebase Auth + Firestore and service-account credentials.
 5. Set secrets using .NET User Secrets.
-6. Run `dotnet restore`, `dotnet build`, then `run-local.ps1`.
-7. Import Postman collection and environment from `postman/`.
+6. Run `dotnet restore`, `dotnet build`.
+7. Edit `run-dev.bat` — set the correct path for `GOOGLE_APPLICATION_CREDENTIALS` (your Firebase service-account JSON).
+8. Double-click **`run-dev.bat`** to start the API at `http://localhost:8080`.
+9. Import Postman collection and environment from `postman/`.
+
+## Running locally
+
+Use **`run-dev.bat`** (not `run-local.ps1`) for day-to-day development:
+
+```bat
+run-dev.bat
+```
+
+What it does:
+- Sets `ASPNETCORE_ENVIRONMENT=Development`
+- Adds Scoop shims to PATH so `ffprobe`/`ffmpeg` are found
+- Sets `GOOGLE_APPLICATION_CREDENTIALS` for Firebase
+- Runs `dotnet run --no-launch-profile` on port 8080
+
+Verify the API is up:
+```powershell
+Invoke-WebRequest http://localhost:8080/health -UseBasicParsing
+```
 
 ## Architecture
 

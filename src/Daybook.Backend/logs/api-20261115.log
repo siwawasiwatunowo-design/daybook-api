@@ -1,0 +1,801 @@
+2026-11-15 09:30:45 [INF] Microsoft.AspNetCore.DataProtection.KeyManagement.XmlKeyManager User profile is available. Using 'C:\Users\ajaz\AppData\Local\ASP.NET\DataProtection-Keys' as key repository and Windows DPAPI to encrypt keys at rest.
+2026-11-15 09:30:45 [INF] Daybook.Backend.Workers.RecordingProcessingWorker Daybook recording worker started.
+2026-11-15 09:30:45 [INF] Microsoft.Hosting.Lifetime Now listening on: http://localhost:5000
+2026-11-15 09:30:45 [INF] Microsoft.Hosting.Lifetime Application started. Press Ctrl+C to shut down.
+2026-11-15 09:30:45 [INF] Microsoft.Hosting.Lifetime Hosting environment: Development
+2026-11-15 09:30:45 [INF] Microsoft.Hosting.Lifetime Content root path: C:\Users\ajaz\Desktop\workspace daybook\daybook-api\src\Daybook.Backend
+2026-11-15 09:31:31 [INF] Microsoft.AspNetCore.Hosting.Diagnostics Request starting HTTP/1.1 POST http://tubeless-gutless-unlined.ngrok-free.dev/api/recordings/upload-url - application/json; charset=utf-8 87
+2026-11-15 09:31:31 [INF] Microsoft.AspNetCore.HttpLogging.HttpLoggingMiddleware Request:
+Method: POST
+PathBase: 
+Path: /api/recordings/upload-url
+QueryString: 
+2026-11-15 09:31:32 [INF] Microsoft.AspNetCore.Routing.EndpointMiddleware Executing endpoint 'HTTP: POST /api/recordings/upload-url'
+2026-11-15 09:31:32 [INF] Microsoft.AspNetCore.Http.Result.OkObjectResult Setting HTTP status code 200.
+2026-11-15 09:31:32 [INF] Microsoft.AspNetCore.Http.Result.OkObjectResult Writing value of type 'RecordingUploadUrl' as Json.
+2026-11-15 09:31:32 [INF] Microsoft.AspNetCore.Routing.EndpointMiddleware Executed endpoint 'HTTP: POST /api/recordings/upload-url'
+2026-11-15 09:31:32 [INF] Microsoft.AspNetCore.HttpLogging.HttpLoggingMiddleware Response:
+StatusCode: 200
+2026-11-15 09:31:32 [INF] Microsoft.AspNetCore.HttpLogging.HttpLoggingMiddleware Duration: 1051.0633ms
+2026-11-15 09:31:32 [INF] Serilog.AspNetCore.RequestLoggingMiddleware HTTP POST /api/recordings/upload-url responded 200 in 1076.2167 ms
+2026-11-15 09:31:32 [INF] Microsoft.AspNetCore.Hosting.Diagnostics Request finished HTTP/1.1 POST http://tubeless-gutless-unlined.ngrok-free.dev/api/recordings/upload-url - 200 null application/json; charset=utf-8 1222.2507ms
+2026-11-15 09:31:33 [INF] Microsoft.AspNetCore.Hosting.Diagnostics Request starting HTTP/1.1 POST http://tubeless-gutless-unlined.ngrok-free.dev/api/recordings - application/json; charset=utf-8 195
+2026-11-15 09:31:33 [INF] Microsoft.AspNetCore.HttpLogging.HttpLoggingMiddleware Request:
+Method: POST
+PathBase: 
+Path: /api/recordings
+QueryString: 
+2026-11-15 09:31:33 [INF] Microsoft.AspNetCore.Routing.EndpointMiddleware Executing endpoint 'HTTP: POST /api/recordings'
+2026-11-15 09:31:33 [INF] Microsoft.EntityFrameworkCore.Database.Command Executed DbCommand (44ms) [Parameters=[@p0='?' (DbType = Guid), @p1='?', @p2='?' (DbType = Int32), @p3='?', @p4='?' (DbType = DateTime), @p5='?' (DbType = DateTime), @p6='?' (DbType = Int32), @p7='?', @p8='?', @p9='?', @p10='?', @p11='?', @p12='?', @p13='?', @p14='?' (DbType = Int32), @p15='?' (DbType = DateTime), @p16='?'], CommandType='"Text"', CommandTimeout='30']
+INSERT INTO "RecordingJobs" ("Id", "ActivityCode", "AttemptCount", "AudioObjectName", "CompletedAt", "CreatedAt", "DurationSeconds", "ErrorMessage", "LanguageOverride", "MomJson", "ProfileSnapshotJson", "ProfileVersion", "RawTranscript", "RefinedTranscript", "Status", "UpdatedAt", "UserId")
+VALUES (@p0, @p1, @p2, @p3, @p4, @p5, @p6, @p7, @p8, @p9, @p10, @p11, @p12, @p13, @p14, @p15, @p16);
+2026-11-15 09:31:33 [INF] Microsoft.AspNetCore.Http.Result.AcceptedResult Setting HTTP status code 202.
+2026-11-15 09:31:33 [INF] Microsoft.AspNetCore.Http.Result.AcceptedResult Writing value of type '<>f__AnonymousType11`3' as Json.
+2026-11-15 09:31:33 [INF] Microsoft.AspNetCore.Routing.EndpointMiddleware Executed endpoint 'HTTP: POST /api/recordings'
+2026-11-15 09:31:33 [INF] Microsoft.AspNetCore.HttpLogging.HttpLoggingMiddleware Response:
+StatusCode: 202
+2026-11-15 09:31:33 [INF] Microsoft.AspNetCore.HttpLogging.HttpLoggingMiddleware Duration: 608.8417ms
+2026-11-15 09:31:33 [INF] Serilog.AspNetCore.RequestLoggingMiddleware HTTP POST /api/recordings responded 202 in 611.5938 ms
+2026-11-15 09:31:33 [INF] Microsoft.AspNetCore.Hosting.Diagnostics Request finished HTTP/1.1 POST http://tubeless-gutless-unlined.ngrok-free.dev/api/recordings - 202 null application/json; charset=utf-8 630.5898ms
+2026-11-15 09:31:36 [INF] Microsoft.AspNetCore.Hosting.Diagnostics Request starting HTTP/1.1 GET http://tubeless-gutless-unlined.ngrok-free.dev/api/recordings/f7898491-06ea-4aa5-b3b3-905433d3fa9e - null null
+2026-11-15 09:31:36 [INF] Microsoft.AspNetCore.HttpLogging.HttpLoggingMiddleware Request:
+Method: GET
+PathBase: 
+Path: /api/recordings/f7898491-06ea-4aa5-b3b3-905433d3fa9e
+QueryString: 
+2026-11-15 09:31:36 [INF] Microsoft.AspNetCore.Routing.EndpointMiddleware Executing endpoint 'HTTP: GET /api/recordings/{id:guid}'
+2026-11-15 09:31:37 [INF] Microsoft.EntityFrameworkCore.Database.Command Executed DbCommand (18ms) [Parameters=[@id='?' (DbType = Guid), @userId='?'], CommandType='"Text"', CommandTimeout='30']
+SELECT r1."Id", r1."ActivityCode", r1."AttemptCount", r1."AudioObjectName", r1."CompletedAt", r1."CreatedAt", r1."DurationSeconds", r1."ErrorMessage", r1."LanguageOverride", r1."MomJson", r1."ProfileSnapshotJson", r1."ProfileVersion", r1."RawTranscript", r1."RefinedTranscript", r1."Status", r1."UpdatedAt", r1."UserId", r0."Id", r0."AttemptCount", r0."AudioFileName", r0."ChunkSummaryJson", r0."ErrorMessage", r0."QualityMetricsJson", r0."RawTranscript", r0."RecordingJobId", r0."RefinedTranscript", r0."SelectedSttModel", r0."Sequence", r0."Status", r0."SttAttemptsJson", r0."SttSegmentsJson", r0."UpdatedAt"
+FROM (
+    SELECT r."Id", r."ActivityCode", r."AttemptCount", r."AudioObjectName", r."CompletedAt", r."CreatedAt", r."DurationSeconds", r."ErrorMessage", r."LanguageOverride", r."MomJson", r."ProfileSnapshotJson", r."ProfileVersion", r."RawTranscript", r."RefinedTranscript", r."Status", r."UpdatedAt", r."UserId"
+    FROM "RecordingJobs" AS r
+    WHERE r."Id" = @id AND r."UserId" = @userId
+    LIMIT 2
+) AS r1
+LEFT JOIN "RecordingChunks" AS r0 ON r1."Id" = r0."RecordingJobId"
+ORDER BY r1."Id"
+2026-11-15 09:31:37 [INF] Microsoft.AspNetCore.Http.Result.OkObjectResult Setting HTTP status code 200.
+2026-11-15 09:31:37 [INF] Microsoft.AspNetCore.Http.Result.OkObjectResult Writing value of type 'RecordingJobView' as Json.
+2026-11-15 09:31:37 [INF] Microsoft.AspNetCore.Routing.EndpointMiddleware Executed endpoint 'HTTP: GET /api/recordings/{id:guid}'
+2026-11-15 09:31:37 [INF] Microsoft.AspNetCore.HttpLogging.HttpLoggingMiddleware Response:
+StatusCode: 200
+2026-11-15 09:31:37 [INF] Microsoft.AspNetCore.HttpLogging.HttpLoggingMiddleware Duration: 728.0634ms
+2026-11-15 09:31:37 [INF] Serilog.AspNetCore.RequestLoggingMiddleware HTTP GET /api/recordings/f7898491-06ea-4aa5-b3b3-905433d3fa9e responded 200 in 730.0660 ms
+2026-11-15 09:31:37 [INF] Microsoft.AspNetCore.Hosting.Diagnostics Request finished HTTP/1.1 GET http://tubeless-gutless-unlined.ngrok-free.dev/api/recordings/f7898491-06ea-4aa5-b3b3-905433d3fa9e - 200 null application/json; charset=utf-8 742.8151ms
+2026-11-15 09:31:38 [INF] Microsoft.EntityFrameworkCore.Database.Command Executed DbCommand (18ms) [Parameters=[@id='?' (DbType = Guid)], CommandType='"Text"', CommandTimeout='30']
+SELECT r1."Id", r1."ActivityCode", r1."AttemptCount", r1."AudioObjectName", r1."CompletedAt", r1."CreatedAt", r1."DurationSeconds", r1."ErrorMessage", r1."LanguageOverride", r1."MomJson", r1."ProfileSnapshotJson", r1."ProfileVersion", r1."RawTranscript", r1."RefinedTranscript", r1."Status", r1."UpdatedAt", r1."UserId", r0."Id", r0."AttemptCount", r0."AudioFileName", r0."ChunkSummaryJson", r0."ErrorMessage", r0."QualityMetricsJson", r0."RawTranscript", r0."RecordingJobId", r0."RefinedTranscript", r0."SelectedSttModel", r0."Sequence", r0."Status", r0."SttAttemptsJson", r0."SttSegmentsJson", r0."UpdatedAt"
+FROM (
+    SELECT r."Id", r."ActivityCode", r."AttemptCount", r."AudioObjectName", r."CompletedAt", r."CreatedAt", r."DurationSeconds", r."ErrorMessage", r."LanguageOverride", r."MomJson", r."ProfileSnapshotJson", r."ProfileVersion", r."RawTranscript", r."RefinedTranscript", r."Status", r."UpdatedAt", r."UserId"
+    FROM "RecordingJobs" AS r
+    WHERE r."Id" = @id
+    LIMIT 2
+) AS r1
+LEFT JOIN "RecordingChunks" AS r0 ON r1."Id" = r0."RecordingJobId"
+ORDER BY r1."Id"
+2026-11-15 09:31:38 [INF] Microsoft.EntityFrameworkCore.Database.Command Executed DbCommand (18ms) [Parameters=[@id='?' (DbType = Guid)], CommandType='"Text"', CommandTimeout='30']
+SELECT r1."Id", r1."ActivityCode", r1."AttemptCount", r1."AudioObjectName", r1."CompletedAt", r1."CreatedAt", r1."DurationSeconds", r1."ErrorMessage", r1."LanguageOverride", r1."MomJson", r1."ProfileSnapshotJson", r1."ProfileVersion", r1."RawTranscript", r1."RefinedTranscript", r1."Status", r1."UpdatedAt", r1."UserId", r0."Id", r0."AttemptCount", r0."AudioFileName", r0."ChunkSummaryJson", r0."ErrorMessage", r0."QualityMetricsJson", r0."RawTranscript", r0."RecordingJobId", r0."RefinedTranscript", r0."SelectedSttModel", r0."Sequence", r0."Status", r0."SttAttemptsJson", r0."SttSegmentsJson", r0."UpdatedAt"
+FROM (
+    SELECT r."Id", r."ActivityCode", r."AttemptCount", r."AudioObjectName", r."CompletedAt", r."CreatedAt", r."DurationSeconds", r."ErrorMessage", r."LanguageOverride", r."MomJson", r."ProfileSnapshotJson", r."ProfileVersion", r."RawTranscript", r."RefinedTranscript", r."Status", r."UpdatedAt", r."UserId"
+    FROM "RecordingJobs" AS r
+    WHERE r."Id" = @id
+    LIMIT 2
+) AS r1
+LEFT JOIN "RecordingChunks" AS r0 ON r1."Id" = r0."RecordingJobId"
+ORDER BY r1."Id"
+2026-11-15 09:31:38 [ERR] Daybook.Backend.Workers.RecordingProcessingWorker Processing failed for recording "f7898491-06ea-4aa5-b3b3-905433d3fa9e".
+System.InvalidOperationException: FFmpeg executable not found at 'ffmpeg'. Install FFmpeg (ffmpeg.exe and ffprobe.exe) and ensure both are in PATH, or set Worker:FfmpegPath / Worker:FfprobePath in appsettings or user-secrets.
+   at Daybook.Backend.Infrastructure.FfmpegAudioChunker.EnsureFfmpegAvailable(String toolPath, String toolName) in C:\Users\ajaz\Desktop\workspace daybook\daybook-api\src\Daybook.Backend\Infrastructure\FfmpegAudioChunker.cs:line 99
+   at Daybook.Backend.Infrastructure.FfmpegAudioChunker.CreateChunksAsync(String inputPath, String outputDirectory, ActivityProcessingProfile profile, CancellationToken ct) in C:\Users\ajaz\Desktop\workspace daybook\daybook-api\src\Daybook.Backend\Infrastructure\FfmpegAudioChunker.cs:line 14
+   at Daybook.Backend.Application.RecordingPipeline.ProcessAsync(Guid recordingId, CancellationToken ct) in C:\Users\ajaz\Desktop\workspace daybook\daybook-api\src\Daybook.Backend\Application\RecordingPipeline.cs:line 39
+   at Daybook.Backend.Workers.RecordingProcessingWorker.ExecuteAsync(CancellationToken stoppingToken) in C:\Users\ajaz\Desktop\workspace daybook\daybook-api\src\Daybook.Backend\Workers\RecordingProcessingWorker.cs:line 33
+2026-11-15 09:31:38 [INF] Microsoft.EntityFrameworkCore.Database.Command Executed DbCommand (18ms) [Parameters=[@id='?' (DbType = Guid)], CommandType='"Text"', CommandTimeout='30']
+SELECT r1."Id", r1."ActivityCode", r1."AttemptCount", r1."AudioObjectName", r1."CompletedAt", r1."CreatedAt", r1."DurationSeconds", r1."ErrorMessage", r1."LanguageOverride", r1."MomJson", r1."ProfileSnapshotJson", r1."ProfileVersion", r1."RawTranscript", r1."RefinedTranscript", r1."Status", r1."UpdatedAt", r1."UserId", r0."Id", r0."AttemptCount", r0."AudioFileName", r0."ChunkSummaryJson", r0."ErrorMessage", r0."QualityMetricsJson", r0."RawTranscript", r0."RecordingJobId", r0."RefinedTranscript", r0."SelectedSttModel", r0."Sequence", r0."Status", r0."SttAttemptsJson", r0."SttSegmentsJson", r0."UpdatedAt"
+FROM (
+    SELECT r."Id", r."ActivityCode", r."AttemptCount", r."AudioObjectName", r."CompletedAt", r."CreatedAt", r."DurationSeconds", r."ErrorMessage", r."LanguageOverride", r."MomJson", r."ProfileSnapshotJson", r."ProfileVersion", r."RawTranscript", r."RefinedTranscript", r."Status", r."UpdatedAt", r."UserId"
+    FROM "RecordingJobs" AS r
+    WHERE r."Id" = @id
+    LIMIT 2
+) AS r1
+LEFT JOIN "RecordingChunks" AS r0 ON r1."Id" = r0."RecordingJobId"
+ORDER BY r1."Id"
+2026-11-15 09:31:38 [INF] Microsoft.EntityFrameworkCore.Database.Command Executed DbCommand (19ms) [Parameters=[@p16='?' (DbType = Guid), @p0='?', @p1='?' (DbType = Int32), @p2='?', @p3='?' (DbType = DateTime), @p4='?' (DbType = DateTime), @p5='?' (DbType = Int32), @p6='?', @p7='?', @p8='?', @p9='?', @p10='?', @p11='?', @p12='?', @p13='?' (DbType = Int32), @p14='?' (DbType = DateTime), @p15='?'], CommandType='"Text"', CommandTimeout='30']
+UPDATE "RecordingJobs" SET "ActivityCode" = @p0, "AttemptCount" = @p1, "AudioObjectName" = @p2, "CompletedAt" = @p3, "CreatedAt" = @p4, "DurationSeconds" = @p5, "ErrorMessage" = @p6, "LanguageOverride" = @p7, "MomJson" = @p8, "ProfileSnapshotJson" = @p9, "ProfileVersion" = @p10, "RawTranscript" = @p11, "RefinedTranscript" = @p12, "Status" = @p13, "UpdatedAt" = @p14, "UserId" = @p15
+WHERE "Id" = @p16;
+2026-11-15 09:31:38 [INF] Microsoft.EntityFrameworkCore.Database.Command Executed DbCommand (17ms) [Parameters=[@jobId='?' (DbType = Guid)], CommandType='"Text"', CommandTimeout='30']
+SELECT r."Id", r."AttemptCount", r."AudioFileName", r."ChunkSummaryJson", r."ErrorMessage", r."QualityMetricsJson", r."RawTranscript", r."RecordingJobId", r."RefinedTranscript", r."SelectedSttModel", r."Sequence", r."Status", r."SttAttemptsJson", r."SttSegmentsJson", r."UpdatedAt"
+FROM "RecordingChunks" AS r
+WHERE r."RecordingJobId" = @jobId
+ORDER BY r."Sequence"
+2026-11-15 09:31:39 [INF] Microsoft.EntityFrameworkCore.Database.Command Executed DbCommand (17ms) [Parameters=[@id='?' (DbType = Guid)], CommandType='"Text"', CommandTimeout='30']
+SELECT r1."Id", r1."ActivityCode", r1."AttemptCount", r1."AudioObjectName", r1."CompletedAt", r1."CreatedAt", r1."DurationSeconds", r1."ErrorMessage", r1."LanguageOverride", r1."MomJson", r1."ProfileSnapshotJson", r1."ProfileVersion", r1."RawTranscript", r1."RefinedTranscript", r1."Status", r1."UpdatedAt", r1."UserId", r0."Id", r0."AttemptCount", r0."AudioFileName", r0."ChunkSummaryJson", r0."ErrorMessage", r0."QualityMetricsJson", r0."RawTranscript", r0."RecordingJobId", r0."RefinedTranscript", r0."SelectedSttModel", r0."Sequence", r0."Status", r0."SttAttemptsJson", r0."SttSegmentsJson", r0."UpdatedAt"
+FROM (
+    SELECT r."Id", r."ActivityCode", r."AttemptCount", r."AudioObjectName", r."CompletedAt", r."CreatedAt", r."DurationSeconds", r."ErrorMessage", r."LanguageOverride", r."MomJson", r."ProfileSnapshotJson", r."ProfileVersion", r."RawTranscript", r."RefinedTranscript", r."Status", r."UpdatedAt", r."UserId"
+    FROM "RecordingJobs" AS r
+    WHERE r."Id" = @id
+    LIMIT 2
+) AS r1
+LEFT JOIN "RecordingChunks" AS r0 ON r1."Id" = r0."RecordingJobId"
+ORDER BY r1."Id"
+2026-11-15 09:31:39 [INF] Microsoft.EntityFrameworkCore.Database.Command Executed DbCommand (18ms) [Parameters=[@id='?' (DbType = Guid)], CommandType='"Text"', CommandTimeout='30']
+SELECT r1."Id", r1."ActivityCode", r1."AttemptCount", r1."AudioObjectName", r1."CompletedAt", r1."CreatedAt", r1."DurationSeconds", r1."ErrorMessage", r1."LanguageOverride", r1."MomJson", r1."ProfileSnapshotJson", r1."ProfileVersion", r1."RawTranscript", r1."RefinedTranscript", r1."Status", r1."UpdatedAt", r1."UserId", r0."Id", r0."AttemptCount", r0."AudioFileName", r0."ChunkSummaryJson", r0."ErrorMessage", r0."QualityMetricsJson", r0."RawTranscript", r0."RecordingJobId", r0."RefinedTranscript", r0."SelectedSttModel", r0."Sequence", r0."Status", r0."SttAttemptsJson", r0."SttSegmentsJson", r0."UpdatedAt"
+FROM (
+    SELECT r."Id", r."ActivityCode", r."AttemptCount", r."AudioObjectName", r."CompletedAt", r."CreatedAt", r."DurationSeconds", r."ErrorMessage", r."LanguageOverride", r."MomJson", r."ProfileSnapshotJson", r."ProfileVersion", r."RawTranscript", r."RefinedTranscript", r."Status", r."UpdatedAt", r."UserId"
+    FROM "RecordingJobs" AS r
+    WHERE r."Id" = @id
+    LIMIT 2
+) AS r1
+LEFT JOIN "RecordingChunks" AS r0 ON r1."Id" = r0."RecordingJobId"
+ORDER BY r1."Id"
+2026-11-15 09:31:39 [ERR] Daybook.Backend.Workers.RecordingProcessingWorker Processing failed for recording "f7898491-06ea-4aa5-b3b3-905433d3fa9e".
+System.InvalidOperationException: FFmpeg executable not found at 'ffmpeg'. Install FFmpeg (ffmpeg.exe and ffprobe.exe) and ensure both are in PATH, or set Worker:FfmpegPath / Worker:FfprobePath in appsettings or user-secrets.
+   at Daybook.Backend.Infrastructure.FfmpegAudioChunker.EnsureFfmpegAvailable(String toolPath, String toolName) in C:\Users\ajaz\Desktop\workspace daybook\daybook-api\src\Daybook.Backend\Infrastructure\FfmpegAudioChunker.cs:line 99
+   at Daybook.Backend.Infrastructure.FfmpegAudioChunker.CreateChunksAsync(String inputPath, String outputDirectory, ActivityProcessingProfile profile, CancellationToken ct) in C:\Users\ajaz\Desktop\workspace daybook\daybook-api\src\Daybook.Backend\Infrastructure\FfmpegAudioChunker.cs:line 14
+   at Daybook.Backend.Application.RecordingPipeline.ProcessAsync(Guid recordingId, CancellationToken ct) in C:\Users\ajaz\Desktop\workspace daybook\daybook-api\src\Daybook.Backend\Application\RecordingPipeline.cs:line 39
+   at Daybook.Backend.Workers.RecordingProcessingWorker.ExecuteAsync(CancellationToken stoppingToken) in C:\Users\ajaz\Desktop\workspace daybook\daybook-api\src\Daybook.Backend\Workers\RecordingProcessingWorker.cs:line 33
+2026-11-15 09:31:39 [INF] Microsoft.EntityFrameworkCore.Database.Command Executed DbCommand (18ms) [Parameters=[@id='?' (DbType = Guid)], CommandType='"Text"', CommandTimeout='30']
+SELECT r1."Id", r1."ActivityCode", r1."AttemptCount", r1."AudioObjectName", r1."CompletedAt", r1."CreatedAt", r1."DurationSeconds", r1."ErrorMessage", r1."LanguageOverride", r1."MomJson", r1."ProfileSnapshotJson", r1."ProfileVersion", r1."RawTranscript", r1."RefinedTranscript", r1."Status", r1."UpdatedAt", r1."UserId", r0."Id", r0."AttemptCount", r0."AudioFileName", r0."ChunkSummaryJson", r0."ErrorMessage", r0."QualityMetricsJson", r0."RawTranscript", r0."RecordingJobId", r0."RefinedTranscript", r0."SelectedSttModel", r0."Sequence", r0."Status", r0."SttAttemptsJson", r0."SttSegmentsJson", r0."UpdatedAt"
+FROM (
+    SELECT r."Id", r."ActivityCode", r."AttemptCount", r."AudioObjectName", r."CompletedAt", r."CreatedAt", r."DurationSeconds", r."ErrorMessage", r."LanguageOverride", r."MomJson", r."ProfileSnapshotJson", r."ProfileVersion", r."RawTranscript", r."RefinedTranscript", r."Status", r."UpdatedAt", r."UserId"
+    FROM "RecordingJobs" AS r
+    WHERE r."Id" = @id
+    LIMIT 2
+) AS r1
+LEFT JOIN "RecordingChunks" AS r0 ON r1."Id" = r0."RecordingJobId"
+ORDER BY r1."Id"
+2026-11-15 09:31:39 [INF] Microsoft.EntityFrameworkCore.Database.Command Executed DbCommand (18ms) [Parameters=[@p16='?' (DbType = Guid), @p0='?', @p1='?' (DbType = Int32), @p2='?', @p3='?' (DbType = DateTime), @p4='?' (DbType = DateTime), @p5='?' (DbType = Int32), @p6='?', @p7='?', @p8='?', @p9='?', @p10='?', @p11='?', @p12='?', @p13='?' (DbType = Int32), @p14='?' (DbType = DateTime), @p15='?'], CommandType='"Text"', CommandTimeout='30']
+UPDATE "RecordingJobs" SET "ActivityCode" = @p0, "AttemptCount" = @p1, "AudioObjectName" = @p2, "CompletedAt" = @p3, "CreatedAt" = @p4, "DurationSeconds" = @p5, "ErrorMessage" = @p6, "LanguageOverride" = @p7, "MomJson" = @p8, "ProfileSnapshotJson" = @p9, "ProfileVersion" = @p10, "RawTranscript" = @p11, "RefinedTranscript" = @p12, "Status" = @p13, "UpdatedAt" = @p14, "UserId" = @p15
+WHERE "Id" = @p16;
+2026-11-15 09:31:39 [INF] Microsoft.EntityFrameworkCore.Database.Command Executed DbCommand (17ms) [Parameters=[@jobId='?' (DbType = Guid)], CommandType='"Text"', CommandTimeout='30']
+SELECT r."Id", r."AttemptCount", r."AudioFileName", r."ChunkSummaryJson", r."ErrorMessage", r."QualityMetricsJson", r."RawTranscript", r."RecordingJobId", r."RefinedTranscript", r."SelectedSttModel", r."Sequence", r."Status", r."SttAttemptsJson", r."SttSegmentsJson", r."UpdatedAt"
+FROM "RecordingChunks" AS r
+WHERE r."RecordingJobId" = @jobId
+ORDER BY r."Sequence"
+2026-11-15 09:31:39 [INF] Microsoft.EntityFrameworkCore.Database.Command Executed DbCommand (17ms) [Parameters=[@id='?' (DbType = Guid)], CommandType='"Text"', CommandTimeout='30']
+SELECT r1."Id", r1."ActivityCode", r1."AttemptCount", r1."AudioObjectName", r1."CompletedAt", r1."CreatedAt", r1."DurationSeconds", r1."ErrorMessage", r1."LanguageOverride", r1."MomJson", r1."ProfileSnapshotJson", r1."ProfileVersion", r1."RawTranscript", r1."RefinedTranscript", r1."Status", r1."UpdatedAt", r1."UserId", r0."Id", r0."AttemptCount", r0."AudioFileName", r0."ChunkSummaryJson", r0."ErrorMessage", r0."QualityMetricsJson", r0."RawTranscript", r0."RecordingJobId", r0."RefinedTranscript", r0."SelectedSttModel", r0."Sequence", r0."Status", r0."SttAttemptsJson", r0."SttSegmentsJson", r0."UpdatedAt"
+FROM (
+    SELECT r."Id", r."ActivityCode", r."AttemptCount", r."AudioObjectName", r."CompletedAt", r."CreatedAt", r."DurationSeconds", r."ErrorMessage", r."LanguageOverride", r."MomJson", r."ProfileSnapshotJson", r."ProfileVersion", r."RawTranscript", r."RefinedTranscript", r."Status", r."UpdatedAt", r."UserId"
+    FROM "RecordingJobs" AS r
+    WHERE r."Id" = @id
+    LIMIT 2
+) AS r1
+LEFT JOIN "RecordingChunks" AS r0 ON r1."Id" = r0."RecordingJobId"
+ORDER BY r1."Id"
+2026-11-15 09:31:39 [INF] Microsoft.EntityFrameworkCore.Database.Command Executed DbCommand (17ms) [Parameters=[@id='?' (DbType = Guid)], CommandType='"Text"', CommandTimeout='30']
+SELECT r1."Id", r1."ActivityCode", r1."AttemptCount", r1."AudioObjectName", r1."CompletedAt", r1."CreatedAt", r1."DurationSeconds", r1."ErrorMessage", r1."LanguageOverride", r1."MomJson", r1."ProfileSnapshotJson", r1."ProfileVersion", r1."RawTranscript", r1."RefinedTranscript", r1."Status", r1."UpdatedAt", r1."UserId", r0."Id", r0."AttemptCount", r0."AudioFileName", r0."ChunkSummaryJson", r0."ErrorMessage", r0."QualityMetricsJson", r0."RawTranscript", r0."RecordingJobId", r0."RefinedTranscript", r0."SelectedSttModel", r0."Sequence", r0."Status", r0."SttAttemptsJson", r0."SttSegmentsJson", r0."UpdatedAt"
+FROM (
+    SELECT r."Id", r."ActivityCode", r."AttemptCount", r."AudioObjectName", r."CompletedAt", r."CreatedAt", r."DurationSeconds", r."ErrorMessage", r."LanguageOverride", r."MomJson", r."ProfileSnapshotJson", r."ProfileVersion", r."RawTranscript", r."RefinedTranscript", r."Status", r."UpdatedAt", r."UserId"
+    FROM "RecordingJobs" AS r
+    WHERE r."Id" = @id
+    LIMIT 2
+) AS r1
+LEFT JOIN "RecordingChunks" AS r0 ON r1."Id" = r0."RecordingJobId"
+ORDER BY r1."Id"
+2026-11-15 09:31:39 [ERR] Daybook.Backend.Workers.RecordingProcessingWorker Processing failed for recording "f7898491-06ea-4aa5-b3b3-905433d3fa9e".
+System.InvalidOperationException: FFmpeg executable not found at 'ffmpeg'. Install FFmpeg (ffmpeg.exe and ffprobe.exe) and ensure both are in PATH, or set Worker:FfmpegPath / Worker:FfprobePath in appsettings or user-secrets.
+   at Daybook.Backend.Infrastructure.FfmpegAudioChunker.EnsureFfmpegAvailable(String toolPath, String toolName) in C:\Users\ajaz\Desktop\workspace daybook\daybook-api\src\Daybook.Backend\Infrastructure\FfmpegAudioChunker.cs:line 99
+   at Daybook.Backend.Infrastructure.FfmpegAudioChunker.CreateChunksAsync(String inputPath, String outputDirectory, ActivityProcessingProfile profile, CancellationToken ct) in C:\Users\ajaz\Desktop\workspace daybook\daybook-api\src\Daybook.Backend\Infrastructure\FfmpegAudioChunker.cs:line 14
+   at Daybook.Backend.Application.RecordingPipeline.ProcessAsync(Guid recordingId, CancellationToken ct) in C:\Users\ajaz\Desktop\workspace daybook\daybook-api\src\Daybook.Backend\Application\RecordingPipeline.cs:line 39
+   at Daybook.Backend.Workers.RecordingProcessingWorker.ExecuteAsync(CancellationToken stoppingToken) in C:\Users\ajaz\Desktop\workspace daybook\daybook-api\src\Daybook.Backend\Workers\RecordingProcessingWorker.cs:line 33
+2026-11-15 09:31:39 [INF] Microsoft.EntityFrameworkCore.Database.Command Executed DbCommand (53ms) [Parameters=[@id='?' (DbType = Guid)], CommandType='"Text"', CommandTimeout='30']
+SELECT r1."Id", r1."ActivityCode", r1."AttemptCount", r1."AudioObjectName", r1."CompletedAt", r1."CreatedAt", r1."DurationSeconds", r1."ErrorMessage", r1."LanguageOverride", r1."MomJson", r1."ProfileSnapshotJson", r1."ProfileVersion", r1."RawTranscript", r1."RefinedTranscript", r1."Status", r1."UpdatedAt", r1."UserId", r0."Id", r0."AttemptCount", r0."AudioFileName", r0."ChunkSummaryJson", r0."ErrorMessage", r0."QualityMetricsJson", r0."RawTranscript", r0."RecordingJobId", r0."RefinedTranscript", r0."SelectedSttModel", r0."Sequence", r0."Status", r0."SttAttemptsJson", r0."SttSegmentsJson", r0."UpdatedAt"
+FROM (
+    SELECT r."Id", r."ActivityCode", r."AttemptCount", r."AudioObjectName", r."CompletedAt", r."CreatedAt", r."DurationSeconds", r."ErrorMessage", r."LanguageOverride", r."MomJson", r."ProfileSnapshotJson", r."ProfileVersion", r."RawTranscript", r."RefinedTranscript", r."Status", r."UpdatedAt", r."UserId"
+    FROM "RecordingJobs" AS r
+    WHERE r."Id" = @id
+    LIMIT 2
+) AS r1
+LEFT JOIN "RecordingChunks" AS r0 ON r1."Id" = r0."RecordingJobId"
+ORDER BY r1."Id"
+2026-11-15 09:31:39 [INF] Microsoft.EntityFrameworkCore.Database.Command Executed DbCommand (18ms) [Parameters=[@p16='?' (DbType = Guid), @p0='?', @p1='?' (DbType = Int32), @p2='?', @p3='?' (DbType = DateTime), @p4='?' (DbType = DateTime), @p5='?' (DbType = Int32), @p6='?', @p7='?', @p8='?', @p9='?', @p10='?', @p11='?', @p12='?', @p13='?' (DbType = Int32), @p14='?' (DbType = DateTime), @p15='?'], CommandType='"Text"', CommandTimeout='30']
+UPDATE "RecordingJobs" SET "ActivityCode" = @p0, "AttemptCount" = @p1, "AudioObjectName" = @p2, "CompletedAt" = @p3, "CreatedAt" = @p4, "DurationSeconds" = @p5, "ErrorMessage" = @p6, "LanguageOverride" = @p7, "MomJson" = @p8, "ProfileSnapshotJson" = @p9, "ProfileVersion" = @p10, "RawTranscript" = @p11, "RefinedTranscript" = @p12, "Status" = @p13, "UpdatedAt" = @p14, "UserId" = @p15
+WHERE "Id" = @p16;
+2026-11-15 09:31:39 [INF] Microsoft.EntityFrameworkCore.Database.Command Executed DbCommand (17ms) [Parameters=[@jobId='?' (DbType = Guid)], CommandType='"Text"', CommandTimeout='30']
+SELECT r."Id", r."AttemptCount", r."AudioFileName", r."ChunkSummaryJson", r."ErrorMessage", r."QualityMetricsJson", r."RawTranscript", r."RecordingJobId", r."RefinedTranscript", r."SelectedSttModel", r."Sequence", r."Status", r."SttAttemptsJson", r."SttSegmentsJson", r."UpdatedAt"
+FROM "RecordingChunks" AS r
+WHERE r."RecordingJobId" = @jobId
+ORDER BY r."Sequence"
+2026-11-15 09:31:40 [INF] Microsoft.AspNetCore.Hosting.Diagnostics Request starting HTTP/1.1 GET http://tubeless-gutless-unlined.ngrok-free.dev/api/recordings/f7898491-06ea-4aa5-b3b3-905433d3fa9e - null null
+2026-11-15 09:31:40 [INF] Microsoft.AspNetCore.HttpLogging.HttpLoggingMiddleware Request:
+Method: GET
+PathBase: 
+Path: /api/recordings/f7898491-06ea-4aa5-b3b3-905433d3fa9e
+QueryString: 
+2026-11-15 09:31:40 [INF] Microsoft.AspNetCore.Routing.EndpointMiddleware Executing endpoint 'HTTP: GET /api/recordings/{id:guid}'
+2026-11-15 09:31:40 [INF] Microsoft.EntityFrameworkCore.Database.Command Executed DbCommand (17ms) [Parameters=[@id='?' (DbType = Guid), @userId='?'], CommandType='"Text"', CommandTimeout='30']
+SELECT r1."Id", r1."ActivityCode", r1."AttemptCount", r1."AudioObjectName", r1."CompletedAt", r1."CreatedAt", r1."DurationSeconds", r1."ErrorMessage", r1."LanguageOverride", r1."MomJson", r1."ProfileSnapshotJson", r1."ProfileVersion", r1."RawTranscript", r1."RefinedTranscript", r1."Status", r1."UpdatedAt", r1."UserId", r0."Id", r0."AttemptCount", r0."AudioFileName", r0."ChunkSummaryJson", r0."ErrorMessage", r0."QualityMetricsJson", r0."RawTranscript", r0."RecordingJobId", r0."RefinedTranscript", r0."SelectedSttModel", r0."Sequence", r0."Status", r0."SttAttemptsJson", r0."SttSegmentsJson", r0."UpdatedAt"
+FROM (
+    SELECT r."Id", r."ActivityCode", r."AttemptCount", r."AudioObjectName", r."CompletedAt", r."CreatedAt", r."DurationSeconds", r."ErrorMessage", r."LanguageOverride", r."MomJson", r."ProfileSnapshotJson", r."ProfileVersion", r."RawTranscript", r."RefinedTranscript", r."Status", r."UpdatedAt", r."UserId"
+    FROM "RecordingJobs" AS r
+    WHERE r."Id" = @id AND r."UserId" = @userId
+    LIMIT 2
+) AS r1
+LEFT JOIN "RecordingChunks" AS r0 ON r1."Id" = r0."RecordingJobId"
+ORDER BY r1."Id"
+2026-11-15 09:31:41 [INF] Microsoft.AspNetCore.Http.Result.OkObjectResult Setting HTTP status code 200.
+2026-11-15 09:31:41 [INF] Microsoft.AspNetCore.Http.Result.OkObjectResult Writing value of type 'RecordingJobView' as Json.
+2026-11-15 09:31:41 [INF] Microsoft.AspNetCore.Routing.EndpointMiddleware Executed endpoint 'HTTP: GET /api/recordings/{id:guid}'
+2026-11-15 09:31:41 [INF] Microsoft.AspNetCore.HttpLogging.HttpLoggingMiddleware Response:
+StatusCode: 200
+2026-11-15 09:31:41 [INF] Microsoft.AspNetCore.HttpLogging.HttpLoggingMiddleware Duration: 132.7117ms
+2026-11-15 09:31:41 [INF] Serilog.AspNetCore.RequestLoggingMiddleware HTTP GET /api/recordings/f7898491-06ea-4aa5-b3b3-905433d3fa9e responded 200 in 144.5592 ms
+2026-11-15 09:31:41 [INF] Microsoft.AspNetCore.Hosting.Diagnostics Request finished HTTP/1.1 GET http://tubeless-gutless-unlined.ngrok-free.dev/api/recordings/f7898491-06ea-4aa5-b3b3-905433d3fa9e - 200 null application/json; charset=utf-8 169.3765ms
+2026-11-15 09:36:27 [INF] Microsoft.AspNetCore.DataProtection.KeyManagement.XmlKeyManager User profile is available. Using 'C:\Users\ajaz\AppData\Local\ASP.NET\DataProtection-Keys' as key repository and Windows DPAPI to encrypt keys at rest.
+2026-11-15 09:40:59 [INF] Microsoft.AspNetCore.DataProtection.KeyManagement.XmlKeyManager User profile is available. Using 'C:\Users\ajaz\AppData\Local\ASP.NET\DataProtection-Keys' as key repository and Windows DPAPI to encrypt keys at rest.
+2026-11-15 09:40:59 [INF] Daybook.Backend.Workers.RecordingProcessingWorker Daybook recording worker started.
+2026-11-15 09:40:59 [INF] Microsoft.Hosting.Lifetime Now listening on: http://0.0.0.0:5000
+2026-11-15 09:40:59 [INF] Microsoft.Hosting.Lifetime Application started. Press Ctrl+C to shut down.
+2026-11-15 09:40:59 [INF] Microsoft.Hosting.Lifetime Hosting environment: Development
+2026-11-15 09:40:59 [INF] Microsoft.Hosting.Lifetime Content root path: C:\Users\ajaz\Desktop\workspace daybook\daybook-api\src\Daybook.Backend
+2026-11-15 09:42:03 [INF] Microsoft.AspNetCore.DataProtection.KeyManagement.XmlKeyManager User profile is available. Using 'C:\Users\ajaz\AppData\Local\ASP.NET\DataProtection-Keys' as key repository and Windows DPAPI to encrypt keys at rest.
+2026-11-15 09:42:04 [INF] Daybook.Backend.Workers.RecordingProcessingWorker Daybook recording worker started.
+2026-11-15 09:42:04 [INF] Microsoft.Hosting.Lifetime Now listening on: http://localhost:5000
+2026-11-15 09:42:04 [INF] Microsoft.Hosting.Lifetime Application started. Press Ctrl+C to shut down.
+2026-11-15 09:42:04 [INF] Microsoft.Hosting.Lifetime Hosting environment: Development
+2026-11-15 09:42:04 [INF] Microsoft.Hosting.Lifetime Content root path: C:\Users\ajaz\Desktop\workspace daybook\daybook-api\src\Daybook.Backend
+2026-11-15 09:42:41 [INF] Microsoft.AspNetCore.Hosting.Diagnostics Request starting HTTP/1.1 POST http://tubeless-gutless-unlined.ngrok-free.dev/api/recordings/upload-url - application/json; charset=utf-8 87
+2026-11-15 09:42:41 [INF] Microsoft.AspNetCore.HttpLogging.HttpLoggingMiddleware Request:
+Method: POST
+PathBase: 
+Path: /api/recordings/upload-url
+QueryString: 
+2026-11-15 09:42:41 [INF] Microsoft.AspNetCore.Routing.EndpointMiddleware Executing endpoint 'HTTP: POST /api/recordings/upload-url'
+2026-11-15 09:42:41 [INF] Microsoft.AspNetCore.Http.Result.OkObjectResult Setting HTTP status code 200.
+2026-11-15 09:42:41 [INF] Microsoft.AspNetCore.Http.Result.OkObjectResult Writing value of type 'RecordingUploadUrl' as Json.
+2026-11-15 09:42:41 [INF] Microsoft.AspNetCore.Routing.EndpointMiddleware Executed endpoint 'HTTP: POST /api/recordings/upload-url'
+2026-11-15 09:42:41 [INF] Microsoft.AspNetCore.HttpLogging.HttpLoggingMiddleware Response:
+StatusCode: 200
+2026-11-15 09:42:41 [INF] Microsoft.AspNetCore.HttpLogging.HttpLoggingMiddleware Duration: 819.4793ms
+2026-11-15 09:42:41 [INF] Serilog.AspNetCore.RequestLoggingMiddleware HTTP POST /api/recordings/upload-url responded 200 in 830.1136 ms
+2026-11-15 09:42:41 [INF] Microsoft.AspNetCore.Hosting.Diagnostics Request finished HTTP/1.1 POST http://tubeless-gutless-unlined.ngrok-free.dev/api/recordings/upload-url - 200 null application/json; charset=utf-8 879.2326ms
+2026-11-15 09:42:42 [INF] Microsoft.AspNetCore.Hosting.Diagnostics Request starting HTTP/1.1 POST http://tubeless-gutless-unlined.ngrok-free.dev/api/recordings - application/json; charset=utf-8 195
+2026-11-15 09:42:42 [INF] Microsoft.AspNetCore.HttpLogging.HttpLoggingMiddleware Request:
+Method: POST
+PathBase: 
+Path: /api/recordings
+QueryString: 
+2026-11-15 09:42:42 [INF] Microsoft.AspNetCore.Routing.EndpointMiddleware Executing endpoint 'HTTP: POST /api/recordings'
+2026-11-15 09:42:42 [INF] Microsoft.EntityFrameworkCore.Database.Command Executed DbCommand (41ms) [Parameters=[@p0='?' (DbType = Guid), @p1='?', @p2='?' (DbType = Int32), @p3='?', @p4='?' (DbType = DateTime), @p5='?' (DbType = DateTime), @p6='?' (DbType = Int32), @p7='?', @p8='?', @p9='?', @p10='?', @p11='?', @p12='?', @p13='?', @p14='?' (DbType = Int32), @p15='?' (DbType = DateTime), @p16='?'], CommandType='"Text"', CommandTimeout='30']
+INSERT INTO "RecordingJobs" ("Id", "ActivityCode", "AttemptCount", "AudioObjectName", "CompletedAt", "CreatedAt", "DurationSeconds", "ErrorMessage", "LanguageOverride", "MomJson", "ProfileSnapshotJson", "ProfileVersion", "RawTranscript", "RefinedTranscript", "Status", "UpdatedAt", "UserId")
+VALUES (@p0, @p1, @p2, @p3, @p4, @p5, @p6, @p7, @p8, @p9, @p10, @p11, @p12, @p13, @p14, @p15, @p16);
+2026-11-15 09:42:42 [INF] Microsoft.AspNetCore.Http.Result.AcceptedResult Setting HTTP status code 202.
+2026-11-15 09:42:42 [INF] Microsoft.AspNetCore.Http.Result.AcceptedResult Writing value of type '<>f__AnonymousType11`3' as Json.
+2026-11-15 09:42:42 [INF] Microsoft.AspNetCore.Routing.EndpointMiddleware Executed endpoint 'HTTP: POST /api/recordings'
+2026-11-15 09:42:42 [INF] Microsoft.AspNetCore.HttpLogging.HttpLoggingMiddleware Response:
+StatusCode: 202
+2026-11-15 09:42:42 [INF] Microsoft.AspNetCore.HttpLogging.HttpLoggingMiddleware Duration: 513.7253ms
+2026-11-15 09:42:42 [INF] Serilog.AspNetCore.RequestLoggingMiddleware HTTP POST /api/recordings responded 202 in 513.9013 ms
+2026-11-15 09:42:42 [INF] Microsoft.AspNetCore.Hosting.Diagnostics Request finished HTTP/1.1 POST http://tubeless-gutless-unlined.ngrok-free.dev/api/recordings - 202 null application/json; charset=utf-8 520.7903ms
+2026-11-15 09:42:45 [INF] Microsoft.AspNetCore.Hosting.Diagnostics Request starting HTTP/1.1 GET http://tubeless-gutless-unlined.ngrok-free.dev/api/recordings/b8381d4a-9018-494e-a395-537cb8668835 - null null
+2026-11-15 09:42:45 [INF] Microsoft.AspNetCore.HttpLogging.HttpLoggingMiddleware Request:
+Method: GET
+PathBase: 
+Path: /api/recordings/b8381d4a-9018-494e-a395-537cb8668835
+QueryString: 
+2026-11-15 09:42:46 [INF] Microsoft.AspNetCore.Routing.EndpointMiddleware Executing endpoint 'HTTP: GET /api/recordings/{id:guid}'
+2026-11-15 09:42:46 [INF] Microsoft.EntityFrameworkCore.Database.Command Executed DbCommand (23ms) [Parameters=[@id='?' (DbType = Guid), @userId='?'], CommandType='"Text"', CommandTimeout='30']
+SELECT r1."Id", r1."ActivityCode", r1."AttemptCount", r1."AudioObjectName", r1."CompletedAt", r1."CreatedAt", r1."DurationSeconds", r1."ErrorMessage", r1."LanguageOverride", r1."MomJson", r1."ProfileSnapshotJson", r1."ProfileVersion", r1."RawTranscript", r1."RefinedTranscript", r1."Status", r1."UpdatedAt", r1."UserId", r0."Id", r0."AttemptCount", r0."AudioFileName", r0."ChunkSummaryJson", r0."ErrorMessage", r0."QualityMetricsJson", r0."RawTranscript", r0."RecordingJobId", r0."RefinedTranscript", r0."SelectedSttModel", r0."Sequence", r0."Status", r0."SttAttemptsJson", r0."SttSegmentsJson", r0."UpdatedAt"
+FROM (
+    SELECT r."Id", r."ActivityCode", r."AttemptCount", r."AudioObjectName", r."CompletedAt", r."CreatedAt", r."DurationSeconds", r."ErrorMessage", r."LanguageOverride", r."MomJson", r."ProfileSnapshotJson", r."ProfileVersion", r."RawTranscript", r."RefinedTranscript", r."Status", r."UpdatedAt", r."UserId"
+    FROM "RecordingJobs" AS r
+    WHERE r."Id" = @id AND r."UserId" = @userId
+    LIMIT 2
+) AS r1
+LEFT JOIN "RecordingChunks" AS r0 ON r1."Id" = r0."RecordingJobId"
+ORDER BY r1."Id"
+2026-11-15 09:42:46 [INF] Microsoft.AspNetCore.Http.Result.OkObjectResult Setting HTTP status code 200.
+2026-11-15 09:42:46 [INF] Microsoft.AspNetCore.Http.Result.OkObjectResult Writing value of type 'RecordingJobView' as Json.
+2026-11-15 09:42:46 [INF] Microsoft.AspNetCore.Routing.EndpointMiddleware Executed endpoint 'HTTP: GET /api/recordings/{id:guid}'
+2026-11-15 09:42:46 [INF] Microsoft.AspNetCore.HttpLogging.HttpLoggingMiddleware Response:
+StatusCode: 200
+2026-11-15 09:42:46 [INF] Microsoft.AspNetCore.HttpLogging.HttpLoggingMiddleware Duration: 612.9091ms
+2026-11-15 09:42:46 [INF] Serilog.AspNetCore.RequestLoggingMiddleware HTTP GET /api/recordings/b8381d4a-9018-494e-a395-537cb8668835 responded 200 in 613.0668 ms
+2026-11-15 09:42:46 [INF] Microsoft.AspNetCore.Hosting.Diagnostics Request finished HTTP/1.1 GET http://tubeless-gutless-unlined.ngrok-free.dev/api/recordings/b8381d4a-9018-494e-a395-537cb8668835 - 200 null application/json; charset=utf-8 617.6339ms
+2026-11-15 09:42:46 [INF] Microsoft.EntityFrameworkCore.Database.Command Executed DbCommand (19ms) [Parameters=[@id='?' (DbType = Guid)], CommandType='"Text"', CommandTimeout='30']
+SELECT r1."Id", r1."ActivityCode", r1."AttemptCount", r1."AudioObjectName", r1."CompletedAt", r1."CreatedAt", r1."DurationSeconds", r1."ErrorMessage", r1."LanguageOverride", r1."MomJson", r1."ProfileSnapshotJson", r1."ProfileVersion", r1."RawTranscript", r1."RefinedTranscript", r1."Status", r1."UpdatedAt", r1."UserId", r0."Id", r0."AttemptCount", r0."AudioFileName", r0."ChunkSummaryJson", r0."ErrorMessage", r0."QualityMetricsJson", r0."RawTranscript", r0."RecordingJobId", r0."RefinedTranscript", r0."SelectedSttModel", r0."Sequence", r0."Status", r0."SttAttemptsJson", r0."SttSegmentsJson", r0."UpdatedAt"
+FROM (
+    SELECT r."Id", r."ActivityCode", r."AttemptCount", r."AudioObjectName", r."CompletedAt", r."CreatedAt", r."DurationSeconds", r."ErrorMessage", r."LanguageOverride", r."MomJson", r."ProfileSnapshotJson", r."ProfileVersion", r."RawTranscript", r."RefinedTranscript", r."Status", r."UpdatedAt", r."UserId"
+    FROM "RecordingJobs" AS r
+    WHERE r."Id" = @id
+    LIMIT 2
+) AS r1
+LEFT JOIN "RecordingChunks" AS r0 ON r1."Id" = r0."RecordingJobId"
+ORDER BY r1."Id"
+2026-11-15 09:42:46 [INF] Microsoft.EntityFrameworkCore.Database.Command Executed DbCommand (20ms) [Parameters=[@id='?' (DbType = Guid)], CommandType='"Text"', CommandTimeout='30']
+SELECT r1."Id", r1."ActivityCode", r1."AttemptCount", r1."AudioObjectName", r1."CompletedAt", r1."CreatedAt", r1."DurationSeconds", r1."ErrorMessage", r1."LanguageOverride", r1."MomJson", r1."ProfileSnapshotJson", r1."ProfileVersion", r1."RawTranscript", r1."RefinedTranscript", r1."Status", r1."UpdatedAt", r1."UserId", r0."Id", r0."AttemptCount", r0."AudioFileName", r0."ChunkSummaryJson", r0."ErrorMessage", r0."QualityMetricsJson", r0."RawTranscript", r0."RecordingJobId", r0."RefinedTranscript", r0."SelectedSttModel", r0."Sequence", r0."Status", r0."SttAttemptsJson", r0."SttSegmentsJson", r0."UpdatedAt"
+FROM (
+    SELECT r."Id", r."ActivityCode", r."AttemptCount", r."AudioObjectName", r."CompletedAt", r."CreatedAt", r."DurationSeconds", r."ErrorMessage", r."LanguageOverride", r."MomJson", r."ProfileSnapshotJson", r."ProfileVersion", r."RawTranscript", r."RefinedTranscript", r."Status", r."UpdatedAt", r."UserId"
+    FROM "RecordingJobs" AS r
+    WHERE r."Id" = @id
+    LIMIT 2
+) AS r1
+LEFT JOIN "RecordingChunks" AS r0 ON r1."Id" = r0."RecordingJobId"
+ORDER BY r1."Id"
+2026-11-15 09:42:47 [ERR] Daybook.Backend.Workers.RecordingProcessingWorker Processing failed for recording "b8381d4a-9018-494e-a395-537cb8668835".
+System.InvalidOperationException: FFmpeg executable not found at 'ffmpeg'. Install FFmpeg (ffmpeg.exe and ffprobe.exe) and ensure both are in PATH, or set Worker:FfmpegPath / Worker:FfprobePath in appsettings or user-secrets.
+   at Daybook.Backend.Infrastructure.FfmpegAudioChunker.EnsureFfmpegAvailable(String toolPath, String toolName) in C:\Users\ajaz\Desktop\workspace daybook\daybook-api\src\Daybook.Backend\Infrastructure\FfmpegAudioChunker.cs:line 99
+   at Daybook.Backend.Infrastructure.FfmpegAudioChunker.CreateChunksAsync(String inputPath, String outputDirectory, ActivityProcessingProfile profile, CancellationToken ct) in C:\Users\ajaz\Desktop\workspace daybook\daybook-api\src\Daybook.Backend\Infrastructure\FfmpegAudioChunker.cs:line 14
+   at Daybook.Backend.Application.RecordingPipeline.ProcessAsync(Guid recordingId, CancellationToken ct) in C:\Users\ajaz\Desktop\workspace daybook\daybook-api\src\Daybook.Backend\Application\RecordingPipeline.cs:line 39
+   at Daybook.Backend.Workers.RecordingProcessingWorker.ExecuteAsync(CancellationToken stoppingToken) in C:\Users\ajaz\Desktop\workspace daybook\daybook-api\src\Daybook.Backend\Workers\RecordingProcessingWorker.cs:line 33
+2026-11-15 09:42:47 [INF] Microsoft.EntityFrameworkCore.Database.Command Executed DbCommand (18ms) [Parameters=[@id='?' (DbType = Guid)], CommandType='"Text"', CommandTimeout='30']
+SELECT r1."Id", r1."ActivityCode", r1."AttemptCount", r1."AudioObjectName", r1."CompletedAt", r1."CreatedAt", r1."DurationSeconds", r1."ErrorMessage", r1."LanguageOverride", r1."MomJson", r1."ProfileSnapshotJson", r1."ProfileVersion", r1."RawTranscript", r1."RefinedTranscript", r1."Status", r1."UpdatedAt", r1."UserId", r0."Id", r0."AttemptCount", r0."AudioFileName", r0."ChunkSummaryJson", r0."ErrorMessage", r0."QualityMetricsJson", r0."RawTranscript", r0."RecordingJobId", r0."RefinedTranscript", r0."SelectedSttModel", r0."Sequence", r0."Status", r0."SttAttemptsJson", r0."SttSegmentsJson", r0."UpdatedAt"
+FROM (
+    SELECT r."Id", r."ActivityCode", r."AttemptCount", r."AudioObjectName", r."CompletedAt", r."CreatedAt", r."DurationSeconds", r."ErrorMessage", r."LanguageOverride", r."MomJson", r."ProfileSnapshotJson", r."ProfileVersion", r."RawTranscript", r."RefinedTranscript", r."Status", r."UpdatedAt", r."UserId"
+    FROM "RecordingJobs" AS r
+    WHERE r."Id" = @id
+    LIMIT 2
+) AS r1
+LEFT JOIN "RecordingChunks" AS r0 ON r1."Id" = r0."RecordingJobId"
+ORDER BY r1."Id"
+2026-11-15 09:42:47 [INF] Microsoft.EntityFrameworkCore.Database.Command Executed DbCommand (19ms) [Parameters=[@p16='?' (DbType = Guid), @p0='?', @p1='?' (DbType = Int32), @p2='?', @p3='?' (DbType = DateTime), @p4='?' (DbType = DateTime), @p5='?' (DbType = Int32), @p6='?', @p7='?', @p8='?', @p9='?', @p10='?', @p11='?', @p12='?', @p13='?' (DbType = Int32), @p14='?' (DbType = DateTime), @p15='?'], CommandType='"Text"', CommandTimeout='30']
+UPDATE "RecordingJobs" SET "ActivityCode" = @p0, "AttemptCount" = @p1, "AudioObjectName" = @p2, "CompletedAt" = @p3, "CreatedAt" = @p4, "DurationSeconds" = @p5, "ErrorMessage" = @p6, "LanguageOverride" = @p7, "MomJson" = @p8, "ProfileSnapshotJson" = @p9, "ProfileVersion" = @p10, "RawTranscript" = @p11, "RefinedTranscript" = @p12, "Status" = @p13, "UpdatedAt" = @p14, "UserId" = @p15
+WHERE "Id" = @p16;
+2026-11-15 09:42:47 [INF] Microsoft.EntityFrameworkCore.Database.Command Executed DbCommand (17ms) [Parameters=[@jobId='?' (DbType = Guid)], CommandType='"Text"', CommandTimeout='30']
+SELECT r."Id", r."AttemptCount", r."AudioFileName", r."ChunkSummaryJson", r."ErrorMessage", r."QualityMetricsJson", r."RawTranscript", r."RecordingJobId", r."RefinedTranscript", r."SelectedSttModel", r."Sequence", r."Status", r."SttAttemptsJson", r."SttSegmentsJson", r."UpdatedAt"
+FROM "RecordingChunks" AS r
+WHERE r."RecordingJobId" = @jobId
+ORDER BY r."Sequence"
+2026-11-15 09:42:47 [INF] Microsoft.EntityFrameworkCore.Database.Command Executed DbCommand (18ms) [Parameters=[@id='?' (DbType = Guid)], CommandType='"Text"', CommandTimeout='30']
+SELECT r1."Id", r1."ActivityCode", r1."AttemptCount", r1."AudioObjectName", r1."CompletedAt", r1."CreatedAt", r1."DurationSeconds", r1."ErrorMessage", r1."LanguageOverride", r1."MomJson", r1."ProfileSnapshotJson", r1."ProfileVersion", r1."RawTranscript", r1."RefinedTranscript", r1."Status", r1."UpdatedAt", r1."UserId", r0."Id", r0."AttemptCount", r0."AudioFileName", r0."ChunkSummaryJson", r0."ErrorMessage", r0."QualityMetricsJson", r0."RawTranscript", r0."RecordingJobId", r0."RefinedTranscript", r0."SelectedSttModel", r0."Sequence", r0."Status", r0."SttAttemptsJson", r0."SttSegmentsJson", r0."UpdatedAt"
+FROM (
+    SELECT r."Id", r."ActivityCode", r."AttemptCount", r."AudioObjectName", r."CompletedAt", r."CreatedAt", r."DurationSeconds", r."ErrorMessage", r."LanguageOverride", r."MomJson", r."ProfileSnapshotJson", r."ProfileVersion", r."RawTranscript", r."RefinedTranscript", r."Status", r."UpdatedAt", r."UserId"
+    FROM "RecordingJobs" AS r
+    WHERE r."Id" = @id
+    LIMIT 2
+) AS r1
+LEFT JOIN "RecordingChunks" AS r0 ON r1."Id" = r0."RecordingJobId"
+ORDER BY r1."Id"
+2026-11-15 09:42:47 [INF] Microsoft.EntityFrameworkCore.Database.Command Executed DbCommand (18ms) [Parameters=[@id='?' (DbType = Guid)], CommandType='"Text"', CommandTimeout='30']
+SELECT r1."Id", r1."ActivityCode", r1."AttemptCount", r1."AudioObjectName", r1."CompletedAt", r1."CreatedAt", r1."DurationSeconds", r1."ErrorMessage", r1."LanguageOverride", r1."MomJson", r1."ProfileSnapshotJson", r1."ProfileVersion", r1."RawTranscript", r1."RefinedTranscript", r1."Status", r1."UpdatedAt", r1."UserId", r0."Id", r0."AttemptCount", r0."AudioFileName", r0."ChunkSummaryJson", r0."ErrorMessage", r0."QualityMetricsJson", r0."RawTranscript", r0."RecordingJobId", r0."RefinedTranscript", r0."SelectedSttModel", r0."Sequence", r0."Status", r0."SttAttemptsJson", r0."SttSegmentsJson", r0."UpdatedAt"
+FROM (
+    SELECT r."Id", r."ActivityCode", r."AttemptCount", r."AudioObjectName", r."CompletedAt", r."CreatedAt", r."DurationSeconds", r."ErrorMessage", r."LanguageOverride", r."MomJson", r."ProfileSnapshotJson", r."ProfileVersion", r."RawTranscript", r."RefinedTranscript", r."Status", r."UpdatedAt", r."UserId"
+    FROM "RecordingJobs" AS r
+    WHERE r."Id" = @id
+    LIMIT 2
+) AS r1
+LEFT JOIN "RecordingChunks" AS r0 ON r1."Id" = r0."RecordingJobId"
+ORDER BY r1."Id"
+2026-11-15 09:42:47 [ERR] Daybook.Backend.Workers.RecordingProcessingWorker Processing failed for recording "b8381d4a-9018-494e-a395-537cb8668835".
+System.InvalidOperationException: FFmpeg executable not found at 'ffmpeg'. Install FFmpeg (ffmpeg.exe and ffprobe.exe) and ensure both are in PATH, or set Worker:FfmpegPath / Worker:FfprobePath in appsettings or user-secrets.
+   at Daybook.Backend.Infrastructure.FfmpegAudioChunker.EnsureFfmpegAvailable(String toolPath, String toolName) in C:\Users\ajaz\Desktop\workspace daybook\daybook-api\src\Daybook.Backend\Infrastructure\FfmpegAudioChunker.cs:line 99
+   at Daybook.Backend.Infrastructure.FfmpegAudioChunker.CreateChunksAsync(String inputPath, String outputDirectory, ActivityProcessingProfile profile, CancellationToken ct) in C:\Users\ajaz\Desktop\workspace daybook\daybook-api\src\Daybook.Backend\Infrastructure\FfmpegAudioChunker.cs:line 14
+   at Daybook.Backend.Application.RecordingPipeline.ProcessAsync(Guid recordingId, CancellationToken ct) in C:\Users\ajaz\Desktop\workspace daybook\daybook-api\src\Daybook.Backend\Application\RecordingPipeline.cs:line 39
+   at Daybook.Backend.Workers.RecordingProcessingWorker.ExecuteAsync(CancellationToken stoppingToken) in C:\Users\ajaz\Desktop\workspace daybook\daybook-api\src\Daybook.Backend\Workers\RecordingProcessingWorker.cs:line 33
+2026-11-15 09:42:47 [INF] Microsoft.EntityFrameworkCore.Database.Command Executed DbCommand (18ms) [Parameters=[@id='?' (DbType = Guid)], CommandType='"Text"', CommandTimeout='30']
+SELECT r1."Id", r1."ActivityCode", r1."AttemptCount", r1."AudioObjectName", r1."CompletedAt", r1."CreatedAt", r1."DurationSeconds", r1."ErrorMessage", r1."LanguageOverride", r1."MomJson", r1."ProfileSnapshotJson", r1."ProfileVersion", r1."RawTranscript", r1."RefinedTranscript", r1."Status", r1."UpdatedAt", r1."UserId", r0."Id", r0."AttemptCount", r0."AudioFileName", r0."ChunkSummaryJson", r0."ErrorMessage", r0."QualityMetricsJson", r0."RawTranscript", r0."RecordingJobId", r0."RefinedTranscript", r0."SelectedSttModel", r0."Sequence", r0."Status", r0."SttAttemptsJson", r0."SttSegmentsJson", r0."UpdatedAt"
+FROM (
+    SELECT r."Id", r."ActivityCode", r."AttemptCount", r."AudioObjectName", r."CompletedAt", r."CreatedAt", r."DurationSeconds", r."ErrorMessage", r."LanguageOverride", r."MomJson", r."ProfileSnapshotJson", r."ProfileVersion", r."RawTranscript", r."RefinedTranscript", r."Status", r."UpdatedAt", r."UserId"
+    FROM "RecordingJobs" AS r
+    WHERE r."Id" = @id
+    LIMIT 2
+) AS r1
+LEFT JOIN "RecordingChunks" AS r0 ON r1."Id" = r0."RecordingJobId"
+ORDER BY r1."Id"
+2026-11-15 09:42:47 [INF] Microsoft.EntityFrameworkCore.Database.Command Executed DbCommand (22ms) [Parameters=[@p16='?' (DbType = Guid), @p0='?', @p1='?' (DbType = Int32), @p2='?', @p3='?' (DbType = DateTime), @p4='?' (DbType = DateTime), @p5='?' (DbType = Int32), @p6='?', @p7='?', @p8='?', @p9='?', @p10='?', @p11='?', @p12='?', @p13='?' (DbType = Int32), @p14='?' (DbType = DateTime), @p15='?'], CommandType='"Text"', CommandTimeout='30']
+UPDATE "RecordingJobs" SET "ActivityCode" = @p0, "AttemptCount" = @p1, "AudioObjectName" = @p2, "CompletedAt" = @p3, "CreatedAt" = @p4, "DurationSeconds" = @p5, "ErrorMessage" = @p6, "LanguageOverride" = @p7, "MomJson" = @p8, "ProfileSnapshotJson" = @p9, "ProfileVersion" = @p10, "RawTranscript" = @p11, "RefinedTranscript" = @p12, "Status" = @p13, "UpdatedAt" = @p14, "UserId" = @p15
+WHERE "Id" = @p16;
+2026-11-15 09:42:47 [INF] Microsoft.EntityFrameworkCore.Database.Command Executed DbCommand (17ms) [Parameters=[@jobId='?' (DbType = Guid)], CommandType='"Text"', CommandTimeout='30']
+SELECT r."Id", r."AttemptCount", r."AudioFileName", r."ChunkSummaryJson", r."ErrorMessage", r."QualityMetricsJson", r."RawTranscript", r."RecordingJobId", r."RefinedTranscript", r."SelectedSttModel", r."Sequence", r."Status", r."SttAttemptsJson", r."SttSegmentsJson", r."UpdatedAt"
+FROM "RecordingChunks" AS r
+WHERE r."RecordingJobId" = @jobId
+ORDER BY r."Sequence"
+2026-11-15 09:42:47 [INF] Microsoft.EntityFrameworkCore.Database.Command Executed DbCommand (17ms) [Parameters=[@id='?' (DbType = Guid)], CommandType='"Text"', CommandTimeout='30']
+SELECT r1."Id", r1."ActivityCode", r1."AttemptCount", r1."AudioObjectName", r1."CompletedAt", r1."CreatedAt", r1."DurationSeconds", r1."ErrorMessage", r1."LanguageOverride", r1."MomJson", r1."ProfileSnapshotJson", r1."ProfileVersion", r1."RawTranscript", r1."RefinedTranscript", r1."Status", r1."UpdatedAt", r1."UserId", r0."Id", r0."AttemptCount", r0."AudioFileName", r0."ChunkSummaryJson", r0."ErrorMessage", r0."QualityMetricsJson", r0."RawTranscript", r0."RecordingJobId", r0."RefinedTranscript", r0."SelectedSttModel", r0."Sequence", r0."Status", r0."SttAttemptsJson", r0."SttSegmentsJson", r0."UpdatedAt"
+FROM (
+    SELECT r."Id", r."ActivityCode", r."AttemptCount", r."AudioObjectName", r."CompletedAt", r."CreatedAt", r."DurationSeconds", r."ErrorMessage", r."LanguageOverride", r."MomJson", r."ProfileSnapshotJson", r."ProfileVersion", r."RawTranscript", r."RefinedTranscript", r."Status", r."UpdatedAt", r."UserId"
+    FROM "RecordingJobs" AS r
+    WHERE r."Id" = @id
+    LIMIT 2
+) AS r1
+LEFT JOIN "RecordingChunks" AS r0 ON r1."Id" = r0."RecordingJobId"
+ORDER BY r1."Id"
+2026-11-15 09:42:47 [INF] Microsoft.EntityFrameworkCore.Database.Command Executed DbCommand (18ms) [Parameters=[@id='?' (DbType = Guid)], CommandType='"Text"', CommandTimeout='30']
+SELECT r1."Id", r1."ActivityCode", r1."AttemptCount", r1."AudioObjectName", r1."CompletedAt", r1."CreatedAt", r1."DurationSeconds", r1."ErrorMessage", r1."LanguageOverride", r1."MomJson", r1."ProfileSnapshotJson", r1."ProfileVersion", r1."RawTranscript", r1."RefinedTranscript", r1."Status", r1."UpdatedAt", r1."UserId", r0."Id", r0."AttemptCount", r0."AudioFileName", r0."ChunkSummaryJson", r0."ErrorMessage", r0."QualityMetricsJson", r0."RawTranscript", r0."RecordingJobId", r0."RefinedTranscript", r0."SelectedSttModel", r0."Sequence", r0."Status", r0."SttAttemptsJson", r0."SttSegmentsJson", r0."UpdatedAt"
+FROM (
+    SELECT r."Id", r."ActivityCode", r."AttemptCount", r."AudioObjectName", r."CompletedAt", r."CreatedAt", r."DurationSeconds", r."ErrorMessage", r."LanguageOverride", r."MomJson", r."ProfileSnapshotJson", r."ProfileVersion", r."RawTranscript", r."RefinedTranscript", r."Status", r."UpdatedAt", r."UserId"
+    FROM "RecordingJobs" AS r
+    WHERE r."Id" = @id
+    LIMIT 2
+) AS r1
+LEFT JOIN "RecordingChunks" AS r0 ON r1."Id" = r0."RecordingJobId"
+ORDER BY r1."Id"
+2026-11-15 09:42:47 [ERR] Daybook.Backend.Workers.RecordingProcessingWorker Processing failed for recording "b8381d4a-9018-494e-a395-537cb8668835".
+System.InvalidOperationException: FFmpeg executable not found at 'ffmpeg'. Install FFmpeg (ffmpeg.exe and ffprobe.exe) and ensure both are in PATH, or set Worker:FfmpegPath / Worker:FfprobePath in appsettings or user-secrets.
+   at Daybook.Backend.Infrastructure.FfmpegAudioChunker.EnsureFfmpegAvailable(String toolPath, String toolName) in C:\Users\ajaz\Desktop\workspace daybook\daybook-api\src\Daybook.Backend\Infrastructure\FfmpegAudioChunker.cs:line 99
+   at Daybook.Backend.Infrastructure.FfmpegAudioChunker.CreateChunksAsync(String inputPath, String outputDirectory, ActivityProcessingProfile profile, CancellationToken ct) in C:\Users\ajaz\Desktop\workspace daybook\daybook-api\src\Daybook.Backend\Infrastructure\FfmpegAudioChunker.cs:line 14
+   at Daybook.Backend.Application.RecordingPipeline.ProcessAsync(Guid recordingId, CancellationToken ct) in C:\Users\ajaz\Desktop\workspace daybook\daybook-api\src\Daybook.Backend\Application\RecordingPipeline.cs:line 39
+   at Daybook.Backend.Workers.RecordingProcessingWorker.ExecuteAsync(CancellationToken stoppingToken) in C:\Users\ajaz\Desktop\workspace daybook\daybook-api\src\Daybook.Backend\Workers\RecordingProcessingWorker.cs:line 33
+2026-11-15 09:42:47 [INF] Microsoft.EntityFrameworkCore.Database.Command Executed DbCommand (40ms) [Parameters=[@id='?' (DbType = Guid)], CommandType='"Text"', CommandTimeout='30']
+SELECT r1."Id", r1."ActivityCode", r1."AttemptCount", r1."AudioObjectName", r1."CompletedAt", r1."CreatedAt", r1."DurationSeconds", r1."ErrorMessage", r1."LanguageOverride", r1."MomJson", r1."ProfileSnapshotJson", r1."ProfileVersion", r1."RawTranscript", r1."RefinedTranscript", r1."Status", r1."UpdatedAt", r1."UserId", r0."Id", r0."AttemptCount", r0."AudioFileName", r0."ChunkSummaryJson", r0."ErrorMessage", r0."QualityMetricsJson", r0."RawTranscript", r0."RecordingJobId", r0."RefinedTranscript", r0."SelectedSttModel", r0."Sequence", r0."Status", r0."SttAttemptsJson", r0."SttSegmentsJson", r0."UpdatedAt"
+FROM (
+    SELECT r."Id", r."ActivityCode", r."AttemptCount", r."AudioObjectName", r."CompletedAt", r."CreatedAt", r."DurationSeconds", r."ErrorMessage", r."LanguageOverride", r."MomJson", r."ProfileSnapshotJson", r."ProfileVersion", r."RawTranscript", r."RefinedTranscript", r."Status", r."UpdatedAt", r."UserId"
+    FROM "RecordingJobs" AS r
+    WHERE r."Id" = @id
+    LIMIT 2
+) AS r1
+LEFT JOIN "RecordingChunks" AS r0 ON r1."Id" = r0."RecordingJobId"
+ORDER BY r1."Id"
+2026-11-15 09:42:47 [INF] Microsoft.EntityFrameworkCore.Database.Command Executed DbCommand (19ms) [Parameters=[@p16='?' (DbType = Guid), @p0='?', @p1='?' (DbType = Int32), @p2='?', @p3='?' (DbType = DateTime), @p4='?' (DbType = DateTime), @p5='?' (DbType = Int32), @p6='?', @p7='?', @p8='?', @p9='?', @p10='?', @p11='?', @p12='?', @p13='?' (DbType = Int32), @p14='?' (DbType = DateTime), @p15='?'], CommandType='"Text"', CommandTimeout='30']
+UPDATE "RecordingJobs" SET "ActivityCode" = @p0, "AttemptCount" = @p1, "AudioObjectName" = @p2, "CompletedAt" = @p3, "CreatedAt" = @p4, "DurationSeconds" = @p5, "ErrorMessage" = @p6, "LanguageOverride" = @p7, "MomJson" = @p8, "ProfileSnapshotJson" = @p9, "ProfileVersion" = @p10, "RawTranscript" = @p11, "RefinedTranscript" = @p12, "Status" = @p13, "UpdatedAt" = @p14, "UserId" = @p15
+WHERE "Id" = @p16;
+2026-11-15 09:42:47 [INF] Microsoft.EntityFrameworkCore.Database.Command Executed DbCommand (17ms) [Parameters=[@jobId='?' (DbType = Guid)], CommandType='"Text"', CommandTimeout='30']
+SELECT r."Id", r."AttemptCount", r."AudioFileName", r."ChunkSummaryJson", r."ErrorMessage", r."QualityMetricsJson", r."RawTranscript", r."RecordingJobId", r."RefinedTranscript", r."SelectedSttModel", r."Sequence", r."Status", r."SttAttemptsJson", r."SttSegmentsJson", r."UpdatedAt"
+FROM "RecordingChunks" AS r
+WHERE r."RecordingJobId" = @jobId
+ORDER BY r."Sequence"
+2026-11-15 09:42:49 [INF] Microsoft.AspNetCore.Hosting.Diagnostics Request starting HTTP/1.1 GET http://tubeless-gutless-unlined.ngrok-free.dev/api/recordings/b8381d4a-9018-494e-a395-537cb8668835 - null null
+2026-11-15 09:42:49 [INF] Microsoft.AspNetCore.HttpLogging.HttpLoggingMiddleware Request:
+Method: GET
+PathBase: 
+Path: /api/recordings/b8381d4a-9018-494e-a395-537cb8668835
+QueryString: 
+2026-11-15 09:42:49 [INF] Microsoft.AspNetCore.Routing.EndpointMiddleware Executing endpoint 'HTTP: GET /api/recordings/{id:guid}'
+2026-11-15 09:42:49 [INF] Microsoft.EntityFrameworkCore.Database.Command Executed DbCommand (18ms) [Parameters=[@id='?' (DbType = Guid), @userId='?'], CommandType='"Text"', CommandTimeout='30']
+SELECT r1."Id", r1."ActivityCode", r1."AttemptCount", r1."AudioObjectName", r1."CompletedAt", r1."CreatedAt", r1."DurationSeconds", r1."ErrorMessage", r1."LanguageOverride", r1."MomJson", r1."ProfileSnapshotJson", r1."ProfileVersion", r1."RawTranscript", r1."RefinedTranscript", r1."Status", r1."UpdatedAt", r1."UserId", r0."Id", r0."AttemptCount", r0."AudioFileName", r0."ChunkSummaryJson", r0."ErrorMessage", r0."QualityMetricsJson", r0."RawTranscript", r0."RecordingJobId", r0."RefinedTranscript", r0."SelectedSttModel", r0."Sequence", r0."Status", r0."SttAttemptsJson", r0."SttSegmentsJson", r0."UpdatedAt"
+FROM (
+    SELECT r."Id", r."ActivityCode", r."AttemptCount", r."AudioObjectName", r."CompletedAt", r."CreatedAt", r."DurationSeconds", r."ErrorMessage", r."LanguageOverride", r."MomJson", r."ProfileSnapshotJson", r."ProfileVersion", r."RawTranscript", r."RefinedTranscript", r."Status", r."UpdatedAt", r."UserId"
+    FROM "RecordingJobs" AS r
+    WHERE r."Id" = @id AND r."UserId" = @userId
+    LIMIT 2
+) AS r1
+LEFT JOIN "RecordingChunks" AS r0 ON r1."Id" = r0."RecordingJobId"
+ORDER BY r1."Id"
+2026-11-15 09:42:49 [INF] Microsoft.AspNetCore.Http.Result.OkObjectResult Setting HTTP status code 200.
+2026-11-15 09:42:49 [INF] Microsoft.AspNetCore.Http.Result.OkObjectResult Writing value of type 'RecordingJobView' as Json.
+2026-11-15 09:42:49 [INF] Microsoft.AspNetCore.Routing.EndpointMiddleware Executed endpoint 'HTTP: GET /api/recordings/{id:guid}'
+2026-11-15 09:42:49 [INF] Microsoft.AspNetCore.HttpLogging.HttpLoggingMiddleware Response:
+StatusCode: 200
+2026-11-15 09:42:49 [INF] Microsoft.AspNetCore.HttpLogging.HttpLoggingMiddleware Duration: 26.0911ms
+2026-11-15 09:42:49 [INF] Serilog.AspNetCore.RequestLoggingMiddleware HTTP GET /api/recordings/b8381d4a-9018-494e-a395-537cb8668835 responded 200 in 26.3965 ms
+2026-11-15 09:42:49 [INF] Microsoft.AspNetCore.Hosting.Diagnostics Request finished HTTP/1.1 GET http://tubeless-gutless-unlined.ngrok-free.dev/api/recordings/b8381d4a-9018-494e-a395-537cb8668835 - 200 null application/json; charset=utf-8 27.9994ms
+2026-11-15 09:45:15 [INF] Microsoft.AspNetCore.DataProtection.KeyManagement.XmlKeyManager User profile is available. Using 'C:\Users\ajaz\AppData\Local\ASP.NET\DataProtection-Keys' as key repository and Windows DPAPI to encrypt keys at rest.
+2026-11-15 09:45:15 [INF] Daybook.Backend.Workers.RecordingProcessingWorker Daybook recording worker started.
+2026-11-15 09:45:16 [INF] Microsoft.Hosting.Lifetime Now listening on: http://localhost:5000
+2026-11-15 09:45:16 [INF] Microsoft.Hosting.Lifetime Application started. Press Ctrl+C to shut down.
+2026-11-15 09:45:16 [INF] Microsoft.Hosting.Lifetime Hosting environment: Development
+2026-11-15 09:45:16 [INF] Microsoft.Hosting.Lifetime Content root path: C:\Users\ajaz\Desktop\workspace daybook\daybook-api\src\Daybook.Backend
+2026-11-15 09:45:32 [INF] Microsoft.AspNetCore.Hosting.Diagnostics Request starting HTTP/1.1 POST http://tubeless-gutless-unlined.ngrok-free.dev/api/recordings/upload-url - application/json; charset=utf-8 87
+2026-11-15 09:45:32 [INF] Microsoft.AspNetCore.HttpLogging.HttpLoggingMiddleware Request:
+Method: POST
+PathBase: 
+Path: /api/recordings/upload-url
+QueryString: 
+2026-11-15 09:45:33 [INF] Microsoft.AspNetCore.Routing.EndpointMiddleware Executing endpoint 'HTTP: POST /api/recordings/upload-url'
+2026-11-15 09:45:33 [INF] Microsoft.AspNetCore.Http.Result.OkObjectResult Setting HTTP status code 200.
+2026-11-15 09:45:33 [INF] Microsoft.AspNetCore.Http.Result.OkObjectResult Writing value of type 'RecordingUploadUrl' as Json.
+2026-11-15 09:45:33 [INF] Microsoft.AspNetCore.Routing.EndpointMiddleware Executed endpoint 'HTTP: POST /api/recordings/upload-url'
+2026-11-15 09:45:33 [INF] Microsoft.AspNetCore.HttpLogging.HttpLoggingMiddleware Response:
+StatusCode: 200
+2026-11-15 09:45:33 [INF] Microsoft.AspNetCore.HttpLogging.HttpLoggingMiddleware Duration: 736.6121ms
+2026-11-15 09:45:33 [INF] Serilog.AspNetCore.RequestLoggingMiddleware HTTP POST /api/recordings/upload-url responded 200 in 746.6453 ms
+2026-11-15 09:45:33 [INF] Microsoft.AspNetCore.Hosting.Diagnostics Request finished HTTP/1.1 POST http://tubeless-gutless-unlined.ngrok-free.dev/api/recordings/upload-url - 200 null application/json; charset=utf-8 795.7379ms
+2026-11-15 09:45:33 [INF] Microsoft.AspNetCore.Hosting.Diagnostics Request starting HTTP/1.1 POST http://tubeless-gutless-unlined.ngrok-free.dev/api/recordings - application/json; charset=utf-8 195
+2026-11-15 09:45:33 [INF] Microsoft.AspNetCore.HttpLogging.HttpLoggingMiddleware Request:
+Method: POST
+PathBase: 
+Path: /api/recordings
+QueryString: 
+2026-11-15 09:45:33 [INF] Microsoft.AspNetCore.Routing.EndpointMiddleware Executing endpoint 'HTTP: POST /api/recordings'
+2026-11-15 09:45:34 [INF] Microsoft.EntityFrameworkCore.Database.Command Executed DbCommand (39ms) [Parameters=[@p0='?' (DbType = Guid), @p1='?', @p2='?' (DbType = Int32), @p3='?', @p4='?' (DbType = DateTime), @p5='?' (DbType = DateTime), @p6='?' (DbType = Int32), @p7='?', @p8='?', @p9='?', @p10='?', @p11='?', @p12='?', @p13='?', @p14='?' (DbType = Int32), @p15='?' (DbType = DateTime), @p16='?'], CommandType='"Text"', CommandTimeout='30']
+INSERT INTO "RecordingJobs" ("Id", "ActivityCode", "AttemptCount", "AudioObjectName", "CompletedAt", "CreatedAt", "DurationSeconds", "ErrorMessage", "LanguageOverride", "MomJson", "ProfileSnapshotJson", "ProfileVersion", "RawTranscript", "RefinedTranscript", "Status", "UpdatedAt", "UserId")
+VALUES (@p0, @p1, @p2, @p3, @p4, @p5, @p6, @p7, @p8, @p9, @p10, @p11, @p12, @p13, @p14, @p15, @p16);
+2026-11-15 09:45:34 [INF] Microsoft.AspNetCore.Http.Result.AcceptedResult Setting HTTP status code 202.
+2026-11-15 09:45:34 [INF] Microsoft.AspNetCore.Http.Result.AcceptedResult Writing value of type '<>f__AnonymousType11`3' as Json.
+2026-11-15 09:45:34 [INF] Microsoft.AspNetCore.Routing.EndpointMiddleware Executed endpoint 'HTTP: POST /api/recordings'
+2026-11-15 09:45:34 [INF] Microsoft.AspNetCore.HttpLogging.HttpLoggingMiddleware Response:
+StatusCode: 202
+2026-11-15 09:45:34 [INF] Microsoft.AspNetCore.HttpLogging.HttpLoggingMiddleware Duration: 519.4553ms
+2026-11-15 09:45:34 [INF] Serilog.AspNetCore.RequestLoggingMiddleware HTTP POST /api/recordings responded 202 in 519.6726 ms
+2026-11-15 09:45:34 [INF] Microsoft.AspNetCore.Hosting.Diagnostics Request finished HTTP/1.1 POST http://tubeless-gutless-unlined.ngrok-free.dev/api/recordings - 202 null application/json; charset=utf-8 527.1533ms
+2026-11-15 09:45:37 [INF] Microsoft.AspNetCore.Hosting.Diagnostics Request starting HTTP/1.1 GET http://tubeless-gutless-unlined.ngrok-free.dev/api/recordings/a6004a53-55de-4ece-962e-9b8e7c3a94d9 - null null
+2026-11-15 09:45:37 [INF] Microsoft.AspNetCore.HttpLogging.HttpLoggingMiddleware Request:
+Method: GET
+PathBase: 
+Path: /api/recordings/a6004a53-55de-4ece-962e-9b8e7c3a94d9
+QueryString: 
+2026-11-15 09:45:37 [INF] Microsoft.AspNetCore.Routing.EndpointMiddleware Executing endpoint 'HTTP: GET /api/recordings/{id:guid}'
+2026-11-15 09:45:38 [INF] Microsoft.EntityFrameworkCore.Database.Command Executed DbCommand (19ms) [Parameters=[@id='?' (DbType = Guid), @userId='?'], CommandType='"Text"', CommandTimeout='30']
+SELECT r1."Id", r1."ActivityCode", r1."AttemptCount", r1."AudioObjectName", r1."CompletedAt", r1."CreatedAt", r1."DurationSeconds", r1."ErrorMessage", r1."LanguageOverride", r1."MomJson", r1."ProfileSnapshotJson", r1."ProfileVersion", r1."RawTranscript", r1."RefinedTranscript", r1."Status", r1."UpdatedAt", r1."UserId", r0."Id", r0."AttemptCount", r0."AudioFileName", r0."ChunkSummaryJson", r0."ErrorMessage", r0."QualityMetricsJson", r0."RawTranscript", r0."RecordingJobId", r0."RefinedTranscript", r0."SelectedSttModel", r0."Sequence", r0."Status", r0."SttAttemptsJson", r0."SttSegmentsJson", r0."UpdatedAt"
+FROM (
+    SELECT r."Id", r."ActivityCode", r."AttemptCount", r."AudioObjectName", r."CompletedAt", r."CreatedAt", r."DurationSeconds", r."ErrorMessage", r."LanguageOverride", r."MomJson", r."ProfileSnapshotJson", r."ProfileVersion", r."RawTranscript", r."RefinedTranscript", r."Status", r."UpdatedAt", r."UserId"
+    FROM "RecordingJobs" AS r
+    WHERE r."Id" = @id AND r."UserId" = @userId
+    LIMIT 2
+) AS r1
+LEFT JOIN "RecordingChunks" AS r0 ON r1."Id" = r0."RecordingJobId"
+ORDER BY r1."Id"
+2026-11-15 09:45:38 [INF] Microsoft.AspNetCore.Http.Result.OkObjectResult Setting HTTP status code 200.
+2026-11-15 09:45:38 [INF] Microsoft.AspNetCore.Http.Result.OkObjectResult Writing value of type 'RecordingJobView' as Json.
+2026-11-15 09:45:38 [INF] Microsoft.AspNetCore.Routing.EndpointMiddleware Executed endpoint 'HTTP: GET /api/recordings/{id:guid}'
+2026-11-15 09:45:38 [INF] Microsoft.AspNetCore.HttpLogging.HttpLoggingMiddleware Response:
+StatusCode: 200
+2026-11-15 09:45:38 [INF] Microsoft.AspNetCore.HttpLogging.HttpLoggingMiddleware Duration: 564.58ms
+2026-11-15 09:45:38 [INF] Serilog.AspNetCore.RequestLoggingMiddleware HTTP GET /api/recordings/a6004a53-55de-4ece-962e-9b8e7c3a94d9 responded 200 in 564.8229 ms
+2026-11-15 09:45:38 [INF] Microsoft.AspNetCore.Hosting.Diagnostics Request finished HTTP/1.1 GET http://tubeless-gutless-unlined.ngrok-free.dev/api/recordings/a6004a53-55de-4ece-962e-9b8e7c3a94d9 - 200 null application/json; charset=utf-8 568.0628ms
+2026-11-15 09:45:38 [INF] Microsoft.EntityFrameworkCore.Database.Command Executed DbCommand (19ms) [Parameters=[@id='?' (DbType = Guid)], CommandType='"Text"', CommandTimeout='30']
+SELECT r1."Id", r1."ActivityCode", r1."AttemptCount", r1."AudioObjectName", r1."CompletedAt", r1."CreatedAt", r1."DurationSeconds", r1."ErrorMessage", r1."LanguageOverride", r1."MomJson", r1."ProfileSnapshotJson", r1."ProfileVersion", r1."RawTranscript", r1."RefinedTranscript", r1."Status", r1."UpdatedAt", r1."UserId", r0."Id", r0."AttemptCount", r0."AudioFileName", r0."ChunkSummaryJson", r0."ErrorMessage", r0."QualityMetricsJson", r0."RawTranscript", r0."RecordingJobId", r0."RefinedTranscript", r0."SelectedSttModel", r0."Sequence", r0."Status", r0."SttAttemptsJson", r0."SttSegmentsJson", r0."UpdatedAt"
+FROM (
+    SELECT r."Id", r."ActivityCode", r."AttemptCount", r."AudioObjectName", r."CompletedAt", r."CreatedAt", r."DurationSeconds", r."ErrorMessage", r."LanguageOverride", r."MomJson", r."ProfileSnapshotJson", r."ProfileVersion", r."RawTranscript", r."RefinedTranscript", r."Status", r."UpdatedAt", r."UserId"
+    FROM "RecordingJobs" AS r
+    WHERE r."Id" = @id
+    LIMIT 2
+) AS r1
+LEFT JOIN "RecordingChunks" AS r0 ON r1."Id" = r0."RecordingJobId"
+ORDER BY r1."Id"
+2026-11-15 09:45:38 [INF] Microsoft.EntityFrameworkCore.Database.Command Executed DbCommand (19ms) [Parameters=[@id='?' (DbType = Guid)], CommandType='"Text"', CommandTimeout='30']
+SELECT r1."Id", r1."ActivityCode", r1."AttemptCount", r1."AudioObjectName", r1."CompletedAt", r1."CreatedAt", r1."DurationSeconds", r1."ErrorMessage", r1."LanguageOverride", r1."MomJson", r1."ProfileSnapshotJson", r1."ProfileVersion", r1."RawTranscript", r1."RefinedTranscript", r1."Status", r1."UpdatedAt", r1."UserId", r0."Id", r0."AttemptCount", r0."AudioFileName", r0."ChunkSummaryJson", r0."ErrorMessage", r0."QualityMetricsJson", r0."RawTranscript", r0."RecordingJobId", r0."RefinedTranscript", r0."SelectedSttModel", r0."Sequence", r0."Status", r0."SttAttemptsJson", r0."SttSegmentsJson", r0."UpdatedAt"
+FROM (
+    SELECT r."Id", r."ActivityCode", r."AttemptCount", r."AudioObjectName", r."CompletedAt", r."CreatedAt", r."DurationSeconds", r."ErrorMessage", r."LanguageOverride", r."MomJson", r."ProfileSnapshotJson", r."ProfileVersion", r."RawTranscript", r."RefinedTranscript", r."Status", r."UpdatedAt", r."UserId"
+    FROM "RecordingJobs" AS r
+    WHERE r."Id" = @id
+    LIMIT 2
+) AS r1
+LEFT JOIN "RecordingChunks" AS r0 ON r1."Id" = r0."RecordingJobId"
+ORDER BY r1."Id"
+2026-11-15 09:45:41 [INF] Microsoft.AspNetCore.Hosting.Diagnostics Request starting HTTP/1.1 GET http://tubeless-gutless-unlined.ngrok-free.dev/api/recordings/a6004a53-55de-4ece-962e-9b8e7c3a94d9 - null null
+2026-11-15 09:45:41 [INF] Microsoft.AspNetCore.HttpLogging.HttpLoggingMiddleware Request:
+Method: GET
+PathBase: 
+Path: /api/recordings/a6004a53-55de-4ece-962e-9b8e7c3a94d9
+QueryString: 
+2026-11-15 09:45:41 [INF] Microsoft.AspNetCore.Routing.EndpointMiddleware Executing endpoint 'HTTP: GET /api/recordings/{id:guid}'
+2026-11-15 09:45:41 [INF] Microsoft.EntityFrameworkCore.Database.Command Executed DbCommand (19ms) [Parameters=[@id='?' (DbType = Guid), @userId='?'], CommandType='"Text"', CommandTimeout='30']
+SELECT r1."Id", r1."ActivityCode", r1."AttemptCount", r1."AudioObjectName", r1."CompletedAt", r1."CreatedAt", r1."DurationSeconds", r1."ErrorMessage", r1."LanguageOverride", r1."MomJson", r1."ProfileSnapshotJson", r1."ProfileVersion", r1."RawTranscript", r1."RefinedTranscript", r1."Status", r1."UpdatedAt", r1."UserId", r0."Id", r0."AttemptCount", r0."AudioFileName", r0."ChunkSummaryJson", r0."ErrorMessage", r0."QualityMetricsJson", r0."RawTranscript", r0."RecordingJobId", r0."RefinedTranscript", r0."SelectedSttModel", r0."Sequence", r0."Status", r0."SttAttemptsJson", r0."SttSegmentsJson", r0."UpdatedAt"
+FROM (
+    SELECT r."Id", r."ActivityCode", r."AttemptCount", r."AudioObjectName", r."CompletedAt", r."CreatedAt", r."DurationSeconds", r."ErrorMessage", r."LanguageOverride", r."MomJson", r."ProfileSnapshotJson", r."ProfileVersion", r."RawTranscript", r."RefinedTranscript", r."Status", r."UpdatedAt", r."UserId"
+    FROM "RecordingJobs" AS r
+    WHERE r."Id" = @id AND r."UserId" = @userId
+    LIMIT 2
+) AS r1
+LEFT JOIN "RecordingChunks" AS r0 ON r1."Id" = r0."RecordingJobId"
+ORDER BY r1."Id"
+2026-11-15 09:45:41 [INF] Microsoft.AspNetCore.Http.Result.OkObjectResult Setting HTTP status code 200.
+2026-11-15 09:45:41 [INF] Microsoft.AspNetCore.Http.Result.OkObjectResult Writing value of type 'RecordingJobView' as Json.
+2026-11-15 09:45:41 [INF] Microsoft.AspNetCore.Routing.EndpointMiddleware Executed endpoint 'HTTP: GET /api/recordings/{id:guid}'
+2026-11-15 09:45:41 [INF] Microsoft.AspNetCore.HttpLogging.HttpLoggingMiddleware Response:
+StatusCode: 200
+2026-11-15 09:45:41 [INF] Microsoft.AspNetCore.HttpLogging.HttpLoggingMiddleware Duration: 23.9052ms
+2026-11-15 09:45:41 [INF] Serilog.AspNetCore.RequestLoggingMiddleware HTTP GET /api/recordings/a6004a53-55de-4ece-962e-9b8e7c3a94d9 responded 200 in 24.0177 ms
+2026-11-15 09:45:41 [INF] Microsoft.AspNetCore.Hosting.Diagnostics Request finished HTTP/1.1 GET http://tubeless-gutless-unlined.ngrok-free.dev/api/recordings/a6004a53-55de-4ece-962e-9b8e7c3a94d9 - 200 null application/json; charset=utf-8 24.9516ms
+2026-11-15 09:45:41 [INF] Microsoft.EntityFrameworkCore.Database.Command Executed DbCommand (17ms) [Parameters=[@jobId='?' (DbType = Guid)], CommandType='"Text"', CommandTimeout='30']
+SELECT EXISTS (
+    SELECT 1
+    FROM "RecordingChunks" AS r
+    WHERE r."RecordingJobId" = @jobId)
+2026-11-15 09:45:41 [INF] Microsoft.EntityFrameworkCore.Database.Command Executed DbCommand (21ms) [Parameters=[@p0='?' (DbType = Guid), @p1='?' (DbType = Int32), @p2='?', @p3='?', @p4='?', @p5='?', @p6='?', @p7='?' (DbType = Guid), @p8='?', @p9='?', @p10='?' (DbType = Int32), @p11='?' (DbType = Int32), @p12='?', @p13='?', @p14='?' (DbType = DateTime)], CommandType='"Text"', CommandTimeout='30']
+INSERT INTO "RecordingChunks" ("Id", "AttemptCount", "AudioFileName", "ChunkSummaryJson", "ErrorMessage", "QualityMetricsJson", "RawTranscript", "RecordingJobId", "RefinedTranscript", "SelectedSttModel", "Sequence", "Status", "SttAttemptsJson", "SttSegmentsJson", "UpdatedAt")
+VALUES (@p0, @p1, @p2, @p3, @p4, @p5, @p6, @p7, @p8, @p9, @p10, @p11, @p12, @p13, @p14);
+2026-11-15 09:45:41 [INF] Microsoft.EntityFrameworkCore.Database.Command Executed DbCommand (19ms) [Parameters=[@jobId='?' (DbType = Guid)], CommandType='"Text"', CommandTimeout='30']
+SELECT r."Id", r."AttemptCount", r."AudioFileName", r."ChunkSummaryJson", r."ErrorMessage", r."QualityMetricsJson", r."RawTranscript", r."RecordingJobId", r."RefinedTranscript", r."SelectedSttModel", r."Sequence", r."Status", r."SttAttemptsJson", r."SttSegmentsJson", r."UpdatedAt"
+FROM "RecordingChunks" AS r
+WHERE r."RecordingJobId" = @jobId
+ORDER BY r."Sequence"
+2026-11-15 09:45:41 [INF] Microsoft.EntityFrameworkCore.Database.Command Executed DbCommand (19ms) [Parameters=[@p14='?' (DbType = Guid), @p0='?' (DbType = Int32), @p1='?', @p2='?', @p3='?', @p4='?', @p5='?', @p6='?' (DbType = Guid), @p7='?', @p8='?', @p9='?' (DbType = Int32), @p10='?' (DbType = Int32), @p11='?', @p12='?', @p13='?' (DbType = DateTime)], CommandType='"Text"', CommandTimeout='30']
+UPDATE "RecordingChunks" SET "AttemptCount" = @p0, "AudioFileName" = @p1, "ChunkSummaryJson" = @p2, "ErrorMessage" = @p3, "QualityMetricsJson" = @p4, "RawTranscript" = @p5, "RecordingJobId" = @p6, "RefinedTranscript" = @p7, "SelectedSttModel" = @p8, "Sequence" = @p9, "Status" = @p10, "SttAttemptsJson" = @p11, "SttSegmentsJson" = @p12, "UpdatedAt" = @p13
+WHERE "Id" = @p14;
+2026-11-15 09:45:41 [INF] System.Net.Http.HttpClient.stt.LogicalHandler Start processing HTTP request POST https://api.groq.com/openai/v1/audio/transcriptions
+2026-11-15 09:45:41 [INF] System.Net.Http.HttpClient.stt.ClientHandler Sending HTTP request POST https://api.groq.com/openai/v1/audio/transcriptions
+2026-11-15 09:45:42 [INF] System.Net.Http.HttpClient.stt.ClientHandler Received HTTP response headers after 565.6066ms - 200
+2026-11-15 09:45:42 [INF] System.Net.Http.HttpClient.stt.LogicalHandler End processing HTTP request after 574.1498ms - 200
+2026-11-15 09:45:42 [WRN] Daybook.Backend.Application.RecordingPipeline Chunk "ede75750-26d1-472f-9358-5673ff469e85" for job "a6004a53-55de-4ece-962e-9b8e7c3a94d9" looks suspicious; retrying with model whisper-large-v3-turbo.
+2026-11-15 09:45:42 [INF] System.Net.Http.HttpClient.stt.LogicalHandler Start processing HTTP request POST https://api.groq.com/openai/v1/audio/transcriptions
+2026-11-15 09:45:42 [INF] System.Net.Http.HttpClient.stt.ClientHandler Sending HTTP request POST https://api.groq.com/openai/v1/audio/transcriptions
+2026-11-15 09:45:42 [INF] System.Net.Http.HttpClient.stt.ClientHandler Received HTTP response headers after 422.5536ms - 200
+2026-11-15 09:45:42 [INF] System.Net.Http.HttpClient.stt.LogicalHandler End processing HTTP request after 423.1776ms - 200
+2026-11-15 09:45:42 [INF] Microsoft.EntityFrameworkCore.Database.Command Executed DbCommand (18ms) [Parameters=[@p14='?' (DbType = Guid), @p0='?' (DbType = Int32), @p1='?', @p2='?', @p3='?', @p4='?', @p5='?', @p6='?' (DbType = Guid), @p7='?', @p8='?', @p9='?' (DbType = Int32), @p10='?' (DbType = Int32), @p11='?', @p12='?', @p13='?' (DbType = DateTime)], CommandType='"Text"', CommandTimeout='30']
+UPDATE "RecordingChunks" SET "AttemptCount" = @p0, "AudioFileName" = @p1, "ChunkSummaryJson" = @p2, "ErrorMessage" = @p3, "QualityMetricsJson" = @p4, "RawTranscript" = @p5, "RecordingJobId" = @p6, "RefinedTranscript" = @p7, "SelectedSttModel" = @p8, "Sequence" = @p9, "Status" = @p10, "SttAttemptsJson" = @p11, "SttSegmentsJson" = @p12, "UpdatedAt" = @p13
+WHERE "Id" = @p14;
+2026-11-15 09:45:43 [INF] Microsoft.EntityFrameworkCore.Database.Command Executed DbCommand (18ms) [Parameters=[@p16='?' (DbType = Guid), @p0='?', @p1='?' (DbType = Int32), @p2='?', @p3='?' (DbType = DateTime), @p4='?' (DbType = DateTime), @p5='?' (DbType = Int32), @p6='?', @p7='?', @p8='?', @p9='?', @p10='?', @p11='?', @p12='?', @p13='?' (DbType = Int32), @p14='?' (DbType = DateTime), @p15='?'], CommandType='"Text"', CommandTimeout='30']
+UPDATE "RecordingJobs" SET "ActivityCode" = @p0, "AttemptCount" = @p1, "AudioObjectName" = @p2, "CompletedAt" = @p3, "CreatedAt" = @p4, "DurationSeconds" = @p5, "ErrorMessage" = @p6, "LanguageOverride" = @p7, "MomJson" = @p8, "ProfileSnapshotJson" = @p9, "ProfileVersion" = @p10, "RawTranscript" = @p11, "RefinedTranscript" = @p12, "Status" = @p13, "UpdatedAt" = @p14, "UserId" = @p15
+WHERE "Id" = @p16;
+2026-11-15 09:45:43 [INF] Microsoft.EntityFrameworkCore.Database.Command Executed DbCommand (18ms) [Parameters=[@jobId='?' (DbType = Guid)], CommandType='"Text"', CommandTimeout='30']
+SELECT r."Id", r."AttemptCount", r."AudioFileName", r."ChunkSummaryJson", r."ErrorMessage", r."QualityMetricsJson", r."RawTranscript", r."RecordingJobId", r."RefinedTranscript", r."SelectedSttModel", r."Sequence", r."Status", r."SttAttemptsJson", r."SttSegmentsJson", r."UpdatedAt"
+FROM "RecordingChunks" AS r
+WHERE r."RecordingJobId" = @jobId
+ORDER BY r."Sequence"
+2026-11-15 09:45:43 [INF] System.Net.Http.HttpClient.gemini.LogicalHandler Start processing HTTP request POST https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent
+2026-11-15 09:45:43 [INF] System.Net.Http.HttpClient.gemini.ClientHandler Sending HTTP request POST https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent
+2026-11-15 09:45:43 [INF] System.Net.Http.HttpClient.gemini.ClientHandler Received HTTP response headers after 293.2348ms - 404
+2026-11-15 09:45:43 [INF] System.Net.Http.HttpClient.gemini.LogicalHandler End processing HTTP request after 293.635ms - 404
+2026-11-15 09:45:43 [ERR] Daybook.Backend.Workers.RecordingProcessingWorker Processing failed for recording "a6004a53-55de-4ece-962e-9b8e7c3a94d9".
+System.Net.Http.HttpRequestException: Response status code does not indicate success: 404 (Not Found).
+   at System.Net.Http.HttpResponseMessage.EnsureSuccessStatusCode()
+   at Daybook.Backend.Infrastructure.GeminiTranscriptRefiner.GenerateJsonAsync(String prompt, CancellationToken ct) in C:\Users\ajaz\Desktop\workspace daybook\daybook-api\src\Daybook.Backend\Infrastructure\GeminiTranscriptRefiner.cs:line 103
+   at Daybook.Backend.Infrastructure.GeminiTranscriptRefiner.RefineChunkAsync(String rawTranscript, ActivityProcessingProfile profile, CancellationToken ct) in C:\Users\ajaz\Desktop\workspace daybook\daybook-api\src\Daybook.Backend\Infrastructure\GeminiTranscriptRefiner.cs:line 35
+   at Daybook.Backend.Application.RecordingPipeline.ProcessAsync(Guid recordingId, CancellationToken ct) in C:\Users\ajaz\Desktop\workspace daybook\daybook-api\src\Daybook.Backend\Application\RecordingPipeline.cs:line 144
+   at Daybook.Backend.Workers.RecordingProcessingWorker.ExecuteAsync(CancellationToken stoppingToken) in C:\Users\ajaz\Desktop\workspace daybook\daybook-api\src\Daybook.Backend\Workers\RecordingProcessingWorker.cs:line 33
+2026-11-15 09:45:43 [INF] Microsoft.EntityFrameworkCore.Database.Command Executed DbCommand (19ms) [Parameters=[@id='?' (DbType = Guid)], CommandType='"Text"', CommandTimeout='30']
+SELECT r1."Id", r1."ActivityCode", r1."AttemptCount", r1."AudioObjectName", r1."CompletedAt", r1."CreatedAt", r1."DurationSeconds", r1."ErrorMessage", r1."LanguageOverride", r1."MomJson", r1."ProfileSnapshotJson", r1."ProfileVersion", r1."RawTranscript", r1."RefinedTranscript", r1."Status", r1."UpdatedAt", r1."UserId", r0."Id", r0."AttemptCount", r0."AudioFileName", r0."ChunkSummaryJson", r0."ErrorMessage", r0."QualityMetricsJson", r0."RawTranscript", r0."RecordingJobId", r0."RefinedTranscript", r0."SelectedSttModel", r0."Sequence", r0."Status", r0."SttAttemptsJson", r0."SttSegmentsJson", r0."UpdatedAt"
+FROM (
+    SELECT r."Id", r."ActivityCode", r."AttemptCount", r."AudioObjectName", r."CompletedAt", r."CreatedAt", r."DurationSeconds", r."ErrorMessage", r."LanguageOverride", r."MomJson", r."ProfileSnapshotJson", r."ProfileVersion", r."RawTranscript", r."RefinedTranscript", r."Status", r."UpdatedAt", r."UserId"
+    FROM "RecordingJobs" AS r
+    WHERE r."Id" = @id
+    LIMIT 2
+) AS r1
+LEFT JOIN "RecordingChunks" AS r0 ON r1."Id" = r0."RecordingJobId"
+ORDER BY r1."Id"
+2026-11-15 09:45:43 [INF] Microsoft.EntityFrameworkCore.Database.Command Executed DbCommand (19ms) [Parameters=[@p16='?' (DbType = Guid), @p0='?', @p1='?' (DbType = Int32), @p2='?', @p3='?' (DbType = DateTime), @p4='?' (DbType = DateTime), @p5='?' (DbType = Int32), @p6='?', @p7='?', @p8='?', @p9='?', @p10='?', @p11='?', @p12='?', @p13='?' (DbType = Int32), @p14='?' (DbType = DateTime), @p15='?'], CommandType='"Text"', CommandTimeout='30']
+UPDATE "RecordingJobs" SET "ActivityCode" = @p0, "AttemptCount" = @p1, "AudioObjectName" = @p2, "CompletedAt" = @p3, "CreatedAt" = @p4, "DurationSeconds" = @p5, "ErrorMessage" = @p6, "LanguageOverride" = @p7, "MomJson" = @p8, "ProfileSnapshotJson" = @p9, "ProfileVersion" = @p10, "RawTranscript" = @p11, "RefinedTranscript" = @p12, "Status" = @p13, "UpdatedAt" = @p14, "UserId" = @p15
+WHERE "Id" = @p16;
+2026-11-15 09:45:43 [INF] Microsoft.EntityFrameworkCore.Database.Command Executed DbCommand (18ms) [Parameters=[@jobId='?' (DbType = Guid)], CommandType='"Text"', CommandTimeout='30']
+SELECT r."Id", r."AttemptCount", r."AudioFileName", r."ChunkSummaryJson", r."ErrorMessage", r."QualityMetricsJson", r."RawTranscript", r."RecordingJobId", r."RefinedTranscript", r."SelectedSttModel", r."Sequence", r."Status", r."SttAttemptsJson", r."SttSegmentsJson", r."UpdatedAt"
+FROM "RecordingChunks" AS r
+WHERE r."RecordingJobId" = @jobId
+ORDER BY r."Sequence"
+2026-11-15 09:45:43 [INF] Microsoft.EntityFrameworkCore.Database.Command Executed DbCommand (19ms) [Parameters=[@id='?' (DbType = Guid)], CommandType='"Text"', CommandTimeout='30']
+SELECT r1."Id", r1."ActivityCode", r1."AttemptCount", r1."AudioObjectName", r1."CompletedAt", r1."CreatedAt", r1."DurationSeconds", r1."ErrorMessage", r1."LanguageOverride", r1."MomJson", r1."ProfileSnapshotJson", r1."ProfileVersion", r1."RawTranscript", r1."RefinedTranscript", r1."Status", r1."UpdatedAt", r1."UserId", r0."Id", r0."AttemptCount", r0."AudioFileName", r0."ChunkSummaryJson", r0."ErrorMessage", r0."QualityMetricsJson", r0."RawTranscript", r0."RecordingJobId", r0."RefinedTranscript", r0."SelectedSttModel", r0."Sequence", r0."Status", r0."SttAttemptsJson", r0."SttSegmentsJson", r0."UpdatedAt"
+FROM (
+    SELECT r."Id", r."ActivityCode", r."AttemptCount", r."AudioObjectName", r."CompletedAt", r."CreatedAt", r."DurationSeconds", r."ErrorMessage", r."LanguageOverride", r."MomJson", r."ProfileSnapshotJson", r."ProfileVersion", r."RawTranscript", r."RefinedTranscript", r."Status", r."UpdatedAt", r."UserId"
+    FROM "RecordingJobs" AS r
+    WHERE r."Id" = @id
+    LIMIT 2
+) AS r1
+LEFT JOIN "RecordingChunks" AS r0 ON r1."Id" = r0."RecordingJobId"
+ORDER BY r1."Id"
+2026-11-15 09:45:43 [INF] Microsoft.EntityFrameworkCore.Database.Command Executed DbCommand (18ms) [Parameters=[@id='?' (DbType = Guid)], CommandType='"Text"', CommandTimeout='30']
+SELECT r1."Id", r1."ActivityCode", r1."AttemptCount", r1."AudioObjectName", r1."CompletedAt", r1."CreatedAt", r1."DurationSeconds", r1."ErrorMessage", r1."LanguageOverride", r1."MomJson", r1."ProfileSnapshotJson", r1."ProfileVersion", r1."RawTranscript", r1."RefinedTranscript", r1."Status", r1."UpdatedAt", r1."UserId", r0."Id", r0."AttemptCount", r0."AudioFileName", r0."ChunkSummaryJson", r0."ErrorMessage", r0."QualityMetricsJson", r0."RawTranscript", r0."RecordingJobId", r0."RefinedTranscript", r0."SelectedSttModel", r0."Sequence", r0."Status", r0."SttAttemptsJson", r0."SttSegmentsJson", r0."UpdatedAt"
+FROM (
+    SELECT r."Id", r."ActivityCode", r."AttemptCount", r."AudioObjectName", r."CompletedAt", r."CreatedAt", r."DurationSeconds", r."ErrorMessage", r."LanguageOverride", r."MomJson", r."ProfileSnapshotJson", r."ProfileVersion", r."RawTranscript", r."RefinedTranscript", r."Status", r."UpdatedAt", r."UserId"
+    FROM "RecordingJobs" AS r
+    WHERE r."Id" = @id
+    LIMIT 2
+) AS r1
+LEFT JOIN "RecordingChunks" AS r0 ON r1."Id" = r0."RecordingJobId"
+ORDER BY r1."Id"
+2026-11-15 09:45:44 [INF] Microsoft.EntityFrameworkCore.Database.Command Executed DbCommand (18ms) [Parameters=[@jobId='?' (DbType = Guid)], CommandType='"Text"', CommandTimeout='30']
+SELECT EXISTS (
+    SELECT 1
+    FROM "RecordingChunks" AS r
+    WHERE r."RecordingJobId" = @jobId)
+2026-11-15 09:45:44 [INF] Microsoft.EntityFrameworkCore.Database.Command Executed DbCommand (18ms) [Parameters=[@jobId='?' (DbType = Guid)], CommandType='"Text"', CommandTimeout='30']
+SELECT r."Id", r."AttemptCount", r."AudioFileName", r."ChunkSummaryJson", r."ErrorMessage", r."QualityMetricsJson", r."RawTranscript", r."RecordingJobId", r."RefinedTranscript", r."SelectedSttModel", r."Sequence", r."Status", r."SttAttemptsJson", r."SttSegmentsJson", r."UpdatedAt"
+FROM "RecordingChunks" AS r
+WHERE r."RecordingJobId" = @jobId
+ORDER BY r."Sequence"
+2026-11-15 09:45:44 [INF] Microsoft.EntityFrameworkCore.Database.Command Executed DbCommand (18ms) [Parameters=[@jobId='?' (DbType = Guid)], CommandType='"Text"', CommandTimeout='30']
+SELECT r."Id", r."AttemptCount", r."AudioFileName", r."ChunkSummaryJson", r."ErrorMessage", r."QualityMetricsJson", r."RawTranscript", r."RecordingJobId", r."RefinedTranscript", r."SelectedSttModel", r."Sequence", r."Status", r."SttAttemptsJson", r."SttSegmentsJson", r."UpdatedAt"
+FROM "RecordingChunks" AS r
+WHERE r."RecordingJobId" = @jobId
+ORDER BY r."Sequence"
+2026-11-15 09:45:44 [INF] System.Net.Http.HttpClient.gemini.LogicalHandler Start processing HTTP request POST https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent
+2026-11-15 09:45:44 [INF] System.Net.Http.HttpClient.gemini.ClientHandler Sending HTTP request POST https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent
+2026-11-15 09:45:44 [INF] System.Net.Http.HttpClient.gemini.ClientHandler Received HTTP response headers after 234.3798ms - 404
+2026-11-15 09:45:44 [INF] System.Net.Http.HttpClient.gemini.LogicalHandler End processing HTTP request after 234.7827ms - 404
+2026-11-15 09:45:44 [ERR] Daybook.Backend.Workers.RecordingProcessingWorker Processing failed for recording "a6004a53-55de-4ece-962e-9b8e7c3a94d9".
+System.Net.Http.HttpRequestException: Response status code does not indicate success: 404 (Not Found).
+   at System.Net.Http.HttpResponseMessage.EnsureSuccessStatusCode()
+   at Daybook.Backend.Infrastructure.GeminiTranscriptRefiner.GenerateJsonAsync(String prompt, CancellationToken ct) in C:\Users\ajaz\Desktop\workspace daybook\daybook-api\src\Daybook.Backend\Infrastructure\GeminiTranscriptRefiner.cs:line 103
+   at Daybook.Backend.Infrastructure.GeminiTranscriptRefiner.RefineChunkAsync(String rawTranscript, ActivityProcessingProfile profile, CancellationToken ct) in C:\Users\ajaz\Desktop\workspace daybook\daybook-api\src\Daybook.Backend\Infrastructure\GeminiTranscriptRefiner.cs:line 35
+   at Daybook.Backend.Application.RecordingPipeline.ProcessAsync(Guid recordingId, CancellationToken ct) in C:\Users\ajaz\Desktop\workspace daybook\daybook-api\src\Daybook.Backend\Application\RecordingPipeline.cs:line 144
+   at Daybook.Backend.Workers.RecordingProcessingWorker.ExecuteAsync(CancellationToken stoppingToken) in C:\Users\ajaz\Desktop\workspace daybook\daybook-api\src\Daybook.Backend\Workers\RecordingProcessingWorker.cs:line 33
+2026-11-15 09:45:44 [INF] Microsoft.EntityFrameworkCore.Database.Command Executed DbCommand (18ms) [Parameters=[@id='?' (DbType = Guid)], CommandType='"Text"', CommandTimeout='30']
+SELECT r1."Id", r1."ActivityCode", r1."AttemptCount", r1."AudioObjectName", r1."CompletedAt", r1."CreatedAt", r1."DurationSeconds", r1."ErrorMessage", r1."LanguageOverride", r1."MomJson", r1."ProfileSnapshotJson", r1."ProfileVersion", r1."RawTranscript", r1."RefinedTranscript", r1."Status", r1."UpdatedAt", r1."UserId", r0."Id", r0."AttemptCount", r0."AudioFileName", r0."ChunkSummaryJson", r0."ErrorMessage", r0."QualityMetricsJson", r0."RawTranscript", r0."RecordingJobId", r0."RefinedTranscript", r0."SelectedSttModel", r0."Sequence", r0."Status", r0."SttAttemptsJson", r0."SttSegmentsJson", r0."UpdatedAt"
+FROM (
+    SELECT r."Id", r."ActivityCode", r."AttemptCount", r."AudioObjectName", r."CompletedAt", r."CreatedAt", r."DurationSeconds", r."ErrorMessage", r."LanguageOverride", r."MomJson", r."ProfileSnapshotJson", r."ProfileVersion", r."RawTranscript", r."RefinedTranscript", r."Status", r."UpdatedAt", r."UserId"
+    FROM "RecordingJobs" AS r
+    WHERE r."Id" = @id
+    LIMIT 2
+) AS r1
+LEFT JOIN "RecordingChunks" AS r0 ON r1."Id" = r0."RecordingJobId"
+ORDER BY r1."Id"
+2026-11-15 09:45:44 [INF] Microsoft.EntityFrameworkCore.Database.Command Executed DbCommand (18ms) [Parameters=[@p16='?' (DbType = Guid), @p0='?', @p1='?' (DbType = Int32), @p2='?', @p3='?' (DbType = DateTime), @p4='?' (DbType = DateTime), @p5='?' (DbType = Int32), @p6='?', @p7='?', @p8='?', @p9='?', @p10='?', @p11='?', @p12='?', @p13='?' (DbType = Int32), @p14='?' (DbType = DateTime), @p15='?'], CommandType='"Text"', CommandTimeout='30']
+UPDATE "RecordingJobs" SET "ActivityCode" = @p0, "AttemptCount" = @p1, "AudioObjectName" = @p2, "CompletedAt" = @p3, "CreatedAt" = @p4, "DurationSeconds" = @p5, "ErrorMessage" = @p6, "LanguageOverride" = @p7, "MomJson" = @p8, "ProfileSnapshotJson" = @p9, "ProfileVersion" = @p10, "RawTranscript" = @p11, "RefinedTranscript" = @p12, "Status" = @p13, "UpdatedAt" = @p14, "UserId" = @p15
+WHERE "Id" = @p16;
+2026-11-15 09:45:44 [INF] Microsoft.EntityFrameworkCore.Database.Command Executed DbCommand (18ms) [Parameters=[@jobId='?' (DbType = Guid)], CommandType='"Text"', CommandTimeout='30']
+SELECT r."Id", r."AttemptCount", r."AudioFileName", r."ChunkSummaryJson", r."ErrorMessage", r."QualityMetricsJson", r."RawTranscript", r."RecordingJobId", r."RefinedTranscript", r."SelectedSttModel", r."Sequence", r."Status", r."SttAttemptsJson", r."SttSegmentsJson", r."UpdatedAt"
+FROM "RecordingChunks" AS r
+WHERE r."RecordingJobId" = @jobId
+ORDER BY r."Sequence"
+2026-11-15 09:45:44 [INF] Microsoft.EntityFrameworkCore.Database.Command Executed DbCommand (18ms) [Parameters=[@id='?' (DbType = Guid)], CommandType='"Text"', CommandTimeout='30']
+SELECT r1."Id", r1."ActivityCode", r1."AttemptCount", r1."AudioObjectName", r1."CompletedAt", r1."CreatedAt", r1."DurationSeconds", r1."ErrorMessage", r1."LanguageOverride", r1."MomJson", r1."ProfileSnapshotJson", r1."ProfileVersion", r1."RawTranscript", r1."RefinedTranscript", r1."Status", r1."UpdatedAt", r1."UserId", r0."Id", r0."AttemptCount", r0."AudioFileName", r0."ChunkSummaryJson", r0."ErrorMessage", r0."QualityMetricsJson", r0."RawTranscript", r0."RecordingJobId", r0."RefinedTranscript", r0."SelectedSttModel", r0."Sequence", r0."Status", r0."SttAttemptsJson", r0."SttSegmentsJson", r0."UpdatedAt"
+FROM (
+    SELECT r."Id", r."ActivityCode", r."AttemptCount", r."AudioObjectName", r."CompletedAt", r."CreatedAt", r."DurationSeconds", r."ErrorMessage", r."LanguageOverride", r."MomJson", r."ProfileSnapshotJson", r."ProfileVersion", r."RawTranscript", r."RefinedTranscript", r."Status", r."UpdatedAt", r."UserId"
+    FROM "RecordingJobs" AS r
+    WHERE r."Id" = @id
+    LIMIT 2
+) AS r1
+LEFT JOIN "RecordingChunks" AS r0 ON r1."Id" = r0."RecordingJobId"
+ORDER BY r1."Id"
+2026-11-15 09:45:44 [INF] Microsoft.EntityFrameworkCore.Database.Command Executed DbCommand (39ms) [Parameters=[@id='?' (DbType = Guid)], CommandType='"Text"', CommandTimeout='30']
+SELECT r1."Id", r1."ActivityCode", r1."AttemptCount", r1."AudioObjectName", r1."CompletedAt", r1."CreatedAt", r1."DurationSeconds", r1."ErrorMessage", r1."LanguageOverride", r1."MomJson", r1."ProfileSnapshotJson", r1."ProfileVersion", r1."RawTranscript", r1."RefinedTranscript", r1."Status", r1."UpdatedAt", r1."UserId", r0."Id", r0."AttemptCount", r0."AudioFileName", r0."ChunkSummaryJson", r0."ErrorMessage", r0."QualityMetricsJson", r0."RawTranscript", r0."RecordingJobId", r0."RefinedTranscript", r0."SelectedSttModel", r0."Sequence", r0."Status", r0."SttAttemptsJson", r0."SttSegmentsJson", r0."UpdatedAt"
+FROM (
+    SELECT r."Id", r."ActivityCode", r."AttemptCount", r."AudioObjectName", r."CompletedAt", r."CreatedAt", r."DurationSeconds", r."ErrorMessage", r."LanguageOverride", r."MomJson", r."ProfileSnapshotJson", r."ProfileVersion", r."RawTranscript", r."RefinedTranscript", r."Status", r."UpdatedAt", r."UserId"
+    FROM "RecordingJobs" AS r
+    WHERE r."Id" = @id
+    LIMIT 2
+) AS r1
+LEFT JOIN "RecordingChunks" AS r0 ON r1."Id" = r0."RecordingJobId"
+ORDER BY r1."Id"
+2026-11-15 09:45:45 [INF] Microsoft.AspNetCore.Hosting.Diagnostics Request starting HTTP/1.1 GET http://tubeless-gutless-unlined.ngrok-free.dev/api/recordings/a6004a53-55de-4ece-962e-9b8e7c3a94d9 - null null
+2026-11-15 09:45:45 [INF] Microsoft.AspNetCore.HttpLogging.HttpLoggingMiddleware Request:
+Method: GET
+PathBase: 
+Path: /api/recordings/a6004a53-55de-4ece-962e-9b8e7c3a94d9
+QueryString: 
+2026-11-15 09:45:45 [INF] Microsoft.AspNetCore.Routing.EndpointMiddleware Executing endpoint 'HTTP: GET /api/recordings/{id:guid}'
+2026-11-15 09:45:45 [INF] Microsoft.EntityFrameworkCore.Database.Command Executed DbCommand (19ms) [Parameters=[@id='?' (DbType = Guid), @userId='?'], CommandType='"Text"', CommandTimeout='30']
+SELECT r1."Id", r1."ActivityCode", r1."AttemptCount", r1."AudioObjectName", r1."CompletedAt", r1."CreatedAt", r1."DurationSeconds", r1."ErrorMessage", r1."LanguageOverride", r1."MomJson", r1."ProfileSnapshotJson", r1."ProfileVersion", r1."RawTranscript", r1."RefinedTranscript", r1."Status", r1."UpdatedAt", r1."UserId", r0."Id", r0."AttemptCount", r0."AudioFileName", r0."ChunkSummaryJson", r0."ErrorMessage", r0."QualityMetricsJson", r0."RawTranscript", r0."RecordingJobId", r0."RefinedTranscript", r0."SelectedSttModel", r0."Sequence", r0."Status", r0."SttAttemptsJson", r0."SttSegmentsJson", r0."UpdatedAt"
+FROM (
+    SELECT r."Id", r."ActivityCode", r."AttemptCount", r."AudioObjectName", r."CompletedAt", r."CreatedAt", r."DurationSeconds", r."ErrorMessage", r."LanguageOverride", r."MomJson", r."ProfileSnapshotJson", r."ProfileVersion", r."RawTranscript", r."RefinedTranscript", r."Status", r."UpdatedAt", r."UserId"
+    FROM "RecordingJobs" AS r
+    WHERE r."Id" = @id AND r."UserId" = @userId
+    LIMIT 2
+) AS r1
+LEFT JOIN "RecordingChunks" AS r0 ON r1."Id" = r0."RecordingJobId"
+ORDER BY r1."Id"
+2026-11-15 09:45:45 [INF] Microsoft.AspNetCore.Http.Result.OkObjectResult Setting HTTP status code 200.
+2026-11-15 09:45:45 [INF] Microsoft.AspNetCore.Http.Result.OkObjectResult Writing value of type 'RecordingJobView' as Json.
+2026-11-15 09:45:45 [INF] Microsoft.AspNetCore.Routing.EndpointMiddleware Executed endpoint 'HTTP: GET /api/recordings/{id:guid}'
+2026-11-15 09:45:45 [INF] Microsoft.AspNetCore.HttpLogging.HttpLoggingMiddleware Response:
+StatusCode: 200
+2026-11-15 09:45:45 [INF] Microsoft.AspNetCore.HttpLogging.HttpLoggingMiddleware Duration: 29.6037ms
+2026-11-15 09:45:45 [INF] Serilog.AspNetCore.RequestLoggingMiddleware HTTP GET /api/recordings/a6004a53-55de-4ece-962e-9b8e7c3a94d9 responded 200 in 29.7109 ms
+2026-11-15 09:45:45 [INF] Microsoft.AspNetCore.Hosting.Diagnostics Request finished HTTP/1.1 GET http://tubeless-gutless-unlined.ngrok-free.dev/api/recordings/a6004a53-55de-4ece-962e-9b8e7c3a94d9 - 200 null application/json; charset=utf-8 30.0524ms
+2026-11-15 09:45:45 [INF] Microsoft.EntityFrameworkCore.Database.Command Executed DbCommand (17ms) [Parameters=[@jobId='?' (DbType = Guid)], CommandType='"Text"', CommandTimeout='30']
+SELECT EXISTS (
+    SELECT 1
+    FROM "RecordingChunks" AS r
+    WHERE r."RecordingJobId" = @jobId)
+2026-11-15 09:45:45 [INF] Microsoft.EntityFrameworkCore.Database.Command Executed DbCommand (18ms) [Parameters=[@jobId='?' (DbType = Guid)], CommandType='"Text"', CommandTimeout='30']
+SELECT r."Id", r."AttemptCount", r."AudioFileName", r."ChunkSummaryJson", r."ErrorMessage", r."QualityMetricsJson", r."RawTranscript", r."RecordingJobId", r."RefinedTranscript", r."SelectedSttModel", r."Sequence", r."Status", r."SttAttemptsJson", r."SttSegmentsJson", r."UpdatedAt"
+FROM "RecordingChunks" AS r
+WHERE r."RecordingJobId" = @jobId
+ORDER BY r."Sequence"
+2026-11-15 09:45:45 [INF] Microsoft.EntityFrameworkCore.Database.Command Executed DbCommand (17ms) [Parameters=[@jobId='?' (DbType = Guid)], CommandType='"Text"', CommandTimeout='30']
+SELECT r."Id", r."AttemptCount", r."AudioFileName", r."ChunkSummaryJson", r."ErrorMessage", r."QualityMetricsJson", r."RawTranscript", r."RecordingJobId", r."RefinedTranscript", r."SelectedSttModel", r."Sequence", r."Status", r."SttAttemptsJson", r."SttSegmentsJson", r."UpdatedAt"
+FROM "RecordingChunks" AS r
+WHERE r."RecordingJobId" = @jobId
+ORDER BY r."Sequence"
+2026-11-15 09:45:45 [INF] System.Net.Http.HttpClient.gemini.LogicalHandler Start processing HTTP request POST https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent
+2026-11-15 09:45:45 [INF] System.Net.Http.HttpClient.gemini.ClientHandler Sending HTTP request POST https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent
+2026-11-15 09:45:45 [INF] System.Net.Http.HttpClient.gemini.ClientHandler Received HTTP response headers after 257.94ms - 404
+2026-11-15 09:45:45 [INF] System.Net.Http.HttpClient.gemini.LogicalHandler End processing HTTP request after 258.3437ms - 404
+2026-11-15 09:45:45 [ERR] Daybook.Backend.Workers.RecordingProcessingWorker Processing failed for recording "a6004a53-55de-4ece-962e-9b8e7c3a94d9".
+System.Net.Http.HttpRequestException: Response status code does not indicate success: 404 (Not Found).
+   at System.Net.Http.HttpResponseMessage.EnsureSuccessStatusCode()
+   at Daybook.Backend.Infrastructure.GeminiTranscriptRefiner.GenerateJsonAsync(String prompt, CancellationToken ct) in C:\Users\ajaz\Desktop\workspace daybook\daybook-api\src\Daybook.Backend\Infrastructure\GeminiTranscriptRefiner.cs:line 103
+   at Daybook.Backend.Infrastructure.GeminiTranscriptRefiner.RefineChunkAsync(String rawTranscript, ActivityProcessingProfile profile, CancellationToken ct) in C:\Users\ajaz\Desktop\workspace daybook\daybook-api\src\Daybook.Backend\Infrastructure\GeminiTranscriptRefiner.cs:line 35
+   at Daybook.Backend.Application.RecordingPipeline.ProcessAsync(Guid recordingId, CancellationToken ct) in C:\Users\ajaz\Desktop\workspace daybook\daybook-api\src\Daybook.Backend\Application\RecordingPipeline.cs:line 144
+   at Daybook.Backend.Workers.RecordingProcessingWorker.ExecuteAsync(CancellationToken stoppingToken) in C:\Users\ajaz\Desktop\workspace daybook\daybook-api\src\Daybook.Backend\Workers\RecordingProcessingWorker.cs:line 33
+2026-11-15 09:45:45 [INF] Microsoft.EntityFrameworkCore.Database.Command Executed DbCommand (19ms) [Parameters=[@id='?' (DbType = Guid)], CommandType='"Text"', CommandTimeout='30']
+SELECT r1."Id", r1."ActivityCode", r1."AttemptCount", r1."AudioObjectName", r1."CompletedAt", r1."CreatedAt", r1."DurationSeconds", r1."ErrorMessage", r1."LanguageOverride", r1."MomJson", r1."ProfileSnapshotJson", r1."ProfileVersion", r1."RawTranscript", r1."RefinedTranscript", r1."Status", r1."UpdatedAt", r1."UserId", r0."Id", r0."AttemptCount", r0."AudioFileName", r0."ChunkSummaryJson", r0."ErrorMessage", r0."QualityMetricsJson", r0."RawTranscript", r0."RecordingJobId", r0."RefinedTranscript", r0."SelectedSttModel", r0."Sequence", r0."Status", r0."SttAttemptsJson", r0."SttSegmentsJson", r0."UpdatedAt"
+FROM (
+    SELECT r."Id", r."ActivityCode", r."AttemptCount", r."AudioObjectName", r."CompletedAt", r."CreatedAt", r."DurationSeconds", r."ErrorMessage", r."LanguageOverride", r."MomJson", r."ProfileSnapshotJson", r."ProfileVersion", r."RawTranscript", r."RefinedTranscript", r."Status", r."UpdatedAt", r."UserId"
+    FROM "RecordingJobs" AS r
+    WHERE r."Id" = @id
+    LIMIT 2
+) AS r1
+LEFT JOIN "RecordingChunks" AS r0 ON r1."Id" = r0."RecordingJobId"
+ORDER BY r1."Id"
+2026-11-15 09:45:45 [INF] Microsoft.EntityFrameworkCore.Database.Command Executed DbCommand (18ms) [Parameters=[@p16='?' (DbType = Guid), @p0='?', @p1='?' (DbType = Int32), @p2='?', @p3='?' (DbType = DateTime), @p4='?' (DbType = DateTime), @p5='?' (DbType = Int32), @p6='?', @p7='?', @p8='?', @p9='?', @p10='?', @p11='?', @p12='?', @p13='?' (DbType = Int32), @p14='?' (DbType = DateTime), @p15='?'], CommandType='"Text"', CommandTimeout='30']
+UPDATE "RecordingJobs" SET "ActivityCode" = @p0, "AttemptCount" = @p1, "AudioObjectName" = @p2, "CompletedAt" = @p3, "CreatedAt" = @p4, "DurationSeconds" = @p5, "ErrorMessage" = @p6, "LanguageOverride" = @p7, "MomJson" = @p8, "ProfileSnapshotJson" = @p9, "ProfileVersion" = @p10, "RawTranscript" = @p11, "RefinedTranscript" = @p12, "Status" = @p13, "UpdatedAt" = @p14, "UserId" = @p15
+WHERE "Id" = @p16;
+2026-11-15 09:45:45 [INF] Microsoft.EntityFrameworkCore.Database.Command Executed DbCommand (18ms) [Parameters=[@jobId='?' (DbType = Guid)], CommandType='"Text"', CommandTimeout='30']
+SELECT r."Id", r."AttemptCount", r."AudioFileName", r."ChunkSummaryJson", r."ErrorMessage", r."QualityMetricsJson", r."RawTranscript", r."RecordingJobId", r."RefinedTranscript", r."SelectedSttModel", r."Sequence", r."Status", r."SttAttemptsJson", r."SttSegmentsJson", r."UpdatedAt"
+FROM "RecordingChunks" AS r
+WHERE r."RecordingJobId" = @jobId
+ORDER BY r."Sequence"
+2026-11-15 09:45:48 [INF] Microsoft.AspNetCore.Hosting.Diagnostics Request starting HTTP/1.1 GET http://tubeless-gutless-unlined.ngrok-free.dev/api/recordings/a6004a53-55de-4ece-962e-9b8e7c3a94d9 - null null
+2026-11-15 09:45:48 [INF] Microsoft.AspNetCore.HttpLogging.HttpLoggingMiddleware Request:
+Method: GET
+PathBase: 
+Path: /api/recordings/a6004a53-55de-4ece-962e-9b8e7c3a94d9
+QueryString: 
+2026-11-15 09:45:48 [INF] Microsoft.AspNetCore.Routing.EndpointMiddleware Executing endpoint 'HTTP: GET /api/recordings/{id:guid}'
+2026-11-15 09:45:48 [INF] Microsoft.EntityFrameworkCore.Database.Command Executed DbCommand (19ms) [Parameters=[@id='?' (DbType = Guid), @userId='?'], CommandType='"Text"', CommandTimeout='30']
+SELECT r1."Id", r1."ActivityCode", r1."AttemptCount", r1."AudioObjectName", r1."CompletedAt", r1."CreatedAt", r1."DurationSeconds", r1."ErrorMessage", r1."LanguageOverride", r1."MomJson", r1."ProfileSnapshotJson", r1."ProfileVersion", r1."RawTranscript", r1."RefinedTranscript", r1."Status", r1."UpdatedAt", r1."UserId", r0."Id", r0."AttemptCount", r0."AudioFileName", r0."ChunkSummaryJson", r0."ErrorMessage", r0."QualityMetricsJson", r0."RawTranscript", r0."RecordingJobId", r0."RefinedTranscript", r0."SelectedSttModel", r0."Sequence", r0."Status", r0."SttAttemptsJson", r0."SttSegmentsJson", r0."UpdatedAt"
+FROM (
+    SELECT r."Id", r."ActivityCode", r."AttemptCount", r."AudioObjectName", r."CompletedAt", r."CreatedAt", r."DurationSeconds", r."ErrorMessage", r."LanguageOverride", r."MomJson", r."ProfileSnapshotJson", r."ProfileVersion", r."RawTranscript", r."RefinedTranscript", r."Status", r."UpdatedAt", r."UserId"
+    FROM "RecordingJobs" AS r
+    WHERE r."Id" = @id AND r."UserId" = @userId
+    LIMIT 2
+) AS r1
+LEFT JOIN "RecordingChunks" AS r0 ON r1."Id" = r0."RecordingJobId"
+ORDER BY r1."Id"
+2026-11-15 09:45:48 [INF] Microsoft.AspNetCore.Http.Result.OkObjectResult Setting HTTP status code 200.
+2026-11-15 09:45:48 [INF] Microsoft.AspNetCore.Http.Result.OkObjectResult Writing value of type 'RecordingJobView' as Json.
+2026-11-15 09:45:48 [INF] Microsoft.AspNetCore.Routing.EndpointMiddleware Executed endpoint 'HTTP: GET /api/recordings/{id:guid}'
+2026-11-15 09:45:48 [INF] Microsoft.AspNetCore.HttpLogging.HttpLoggingMiddleware Response:
+StatusCode: 200
+2026-11-15 09:45:48 [INF] Microsoft.AspNetCore.HttpLogging.HttpLoggingMiddleware Duration: 26.2424ms
+2026-11-15 09:45:48 [INF] Serilog.AspNetCore.RequestLoggingMiddleware HTTP GET /api/recordings/a6004a53-55de-4ece-962e-9b8e7c3a94d9 responded 200 in 26.4544 ms
+2026-11-15 09:45:48 [INF] Microsoft.AspNetCore.Hosting.Diagnostics Request finished HTTP/1.1 GET http://tubeless-gutless-unlined.ngrok-free.dev/api/recordings/a6004a53-55de-4ece-962e-9b8e7c3a94d9 - 200 null application/json; charset=utf-8 27.3463ms

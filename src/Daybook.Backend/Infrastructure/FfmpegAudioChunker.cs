@@ -11,6 +11,7 @@ public sealed class FfmpegAudioChunker(IOptions<WorkerOptions> options) : IAudio
     public async Task<IReadOnlyList<string>> CreateChunksAsync(string inputPath, string outputDirectory,
         ActivityProcessingProfile profile, CancellationToken ct)
     {
+        EnsureFfmpegAvailable(options.Value.FfmpegPath, "FFmpeg");
         Directory.CreateDirectory(outputDirectory);
         foreach (var oldFile in Directory.EnumerateFiles(outputDirectory, "chunk_*.wav")) File.Delete(oldFile);
 
@@ -32,7 +33,8 @@ public sealed class FfmpegAudioChunker(IOptions<WorkerOptions> options) : IAudio
                 RedirectStandardError = true,
                 RedirectStandardOutput = false,
                 UseShellExecute = false,
-                CreateNoWindow = true
+                CreateNoWindow = true,
+                WorkingDirectory = Directory.GetCurrentDirectory()
             };
             foreach (var arg in new[] { "-y", "-ss", start.ToString("0.###", CultureInfo.InvariantCulture),
                 "-i", inputPath, "-t", actualDuration.ToString("0.###", CultureInfo.InvariantCulture),
@@ -54,13 +56,15 @@ public sealed class FfmpegAudioChunker(IOptions<WorkerOptions> options) : IAudio
 
     private async Task<double> GetDurationAsync(string inputPath, CancellationToken ct)
     {
+        EnsureFfmpegAvailable(options.Value.FfprobePath, "FFprobe");
         var psi = new ProcessStartInfo
         {
             FileName = options.Value.FfprobePath,
             RedirectStandardOutput = true,
             RedirectStandardError = true,
             UseShellExecute = false,
-            CreateNoWindow = true
+            CreateNoWindow = true,
+            WorkingDirectory = Directory.GetCurrentDirectory()
         };
         foreach (var arg in new[] { "-v", "error", "-show_entries", "format=duration",
             "-of", "default=noprint_wrappers=1:nokey=1", inputPath }) psi.ArgumentList.Add(arg);
@@ -86,5 +90,38 @@ public sealed class FfmpegAudioChunker(IOptions<WorkerOptions> options) : IAudio
         }
         filters.Add($"loudnorm=I={Math.Clamp(profile.LoudnessTargetI, -24, -12).ToString(CultureInfo.InvariantCulture)}:TP=-1.5:LRA=11");
         return string.Join(",", filters);
+    }
+
+    private static void EnsureFfmpegAvailable(string toolPath, string toolName)
+    {
+        if (!File.Exists(toolPath))
+        {
+            throw new InvalidOperationException(
+                $"{toolName} executable not found at '{toolPath}'. " +
+                "Install FFmpeg (ffmpeg.exe and ffprobe.exe) and ensure both are in PATH, " +
+                "or set Worker:FfmpegPath / Worker:FfprobePath in appsettings or user-secrets.");
+        }
+        try
+        {
+            using var process = Process.Start(new ProcessStartInfo
+            {
+                FileName = toolPath,
+                Arguments = "-version",
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                UseShellExecute = false,
+                CreateNoWindow = true,
+                WorkingDirectory = Directory.GetCurrentDirectory()
+            });
+            if (process is not null) process.Dispose();
+        }
+        catch (Exception ex)
+        {
+            throw new InvalidOperationException(
+                $"{toolName} executable not found or not executable at '{toolPath}'. " +
+                "Install FFmpeg (ffmpeg.exe and ffprobe.exe) and ensure both are in PATH, " +
+                "or set Worker:FfmpegPath / Worker:FfprobePath in appsettings or user-secrets. " +
+                $"Original error: {ex.Message}");
+        }
     }
 }

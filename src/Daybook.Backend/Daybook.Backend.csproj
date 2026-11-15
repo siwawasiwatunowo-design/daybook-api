@@ -17,5 +17,7 @@
     <!-- Pin patched 9.x dependency to resolve transitive NU1902/NU1903 advisories. -->
     <PackageReference Include="System.Security.Cryptography.Pkcs" Version="9.0.21" />
     <PackageReference Include="AWSSDK.S3" Version="3.7.414.3" />
+    <PackageReference Include="Serilog.AspNetCore" Version="8.0.1" />
+    <PackageReference Include="Serilog.Sinks.File" Version="6.0.0" />
   </ItemGroup>
 </Project>
