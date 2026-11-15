@@ -146,12 +146,12 @@ public sealed class RecordingPipeline(
         foreach (var chunk in chunks.OrderBy(x => x.Sequence))
         {
             if (string.IsNullOrWhiteSpace(chunk.RawTranscript)) continue;
-            if (string.IsNullOrWhiteSpace(chunk.RefinedTranscript))
+            if (ShouldRunRefinement(chunk))
             {
                 if (!profile.EnableGeminiRefinement)
                 {
                     chunk.RefinedTranscript = chunk.RawTranscript;
-                    chunk.ChunkSummaryJson = JsonSerializer.Serialize(new { summary = chunk.RawTranscript });
+                    chunk.ChunkSummaryJson = CreateRefinementSummary(chunk.RawTranscript, "disabled");
                 }
                 else
                 {
@@ -161,7 +161,7 @@ public sealed class RecordingPipeline(
                     {
                         var refinedChunk = await refiner.RefineChunkAsync(chunk.RawTranscript, profile, refinementCts.Token);
                         chunk.RefinedTranscript = refinedChunk.RefinedTranscript;
-                        chunk.ChunkSummaryJson = refinedChunk.ChunkSummaryJson;
+                        chunk.ChunkSummaryJson = CreateRefinementSummary(refinedChunk.ChunkSummaryJson, "completed");
                     }
                     catch (OperationCanceledException) when (ct.IsCancellationRequested)
                     {
@@ -174,11 +174,7 @@ public sealed class RecordingPipeline(
                         logger.LogWarning("Gemini refinement timed out after {TimeoutSeconds}s for chunk {ChunkId} in recording {RecordingId}; keeping raw transcript and continuing.",
                             refinementTimeoutSeconds, chunk.Id, job.Id);
                         chunk.RefinedTranscript = chunk.RawTranscript;
-                        chunk.ChunkSummaryJson = JsonSerializer.Serialize(new
-                        {
-                            summary = chunk.RawTranscript,
-                            refinementStatus = "timeout"
-                        });
+                        chunk.ChunkSummaryJson = CreateRefinementSummary(chunk.RawTranscript, "timeout");
                     }
                     catch (Exception ex)
                     {
@@ -187,12 +183,7 @@ public sealed class RecordingPipeline(
                             chunk.Id, job.Id);
                         needsReview = true;
                         chunk.RefinedTranscript = chunk.RawTranscript;
-                        chunk.ChunkSummaryJson = JsonSerializer.Serialize(new
-                        {
-                            summary = chunk.RawTranscript,
-                            refinementStatus = "failed",
-                            refinementError = ex.Message
-                        });
+                        chunk.ChunkSummaryJson = CreateRefinementSummary(chunk.RawTranscript, "failed", ex.Message);
                     }
                 }
                 await jobs.UpdateChunkAsync(chunk, ct);
@@ -203,7 +194,7 @@ public sealed class RecordingPipeline(
         var refinedTranscript = TranscriptStitcher.Stitch(chunks.OrderBy(x => x.Sequence)
             .Select(x => x.RefinedTranscript ?? x.RawTranscript));
         var summaries = chunks.OrderBy(x => x.Sequence)
-            .Select(x => x.ChunkSummaryJson ?? "")
+            .Select(x => GetSummaryForMom(x.ChunkSummaryJson))
             .Where(x => !string.IsNullOrWhiteSpace(x)).ToList();
 
         // Preserve raw STT output separately; refined text is an additional artifact.
@@ -255,4 +246,41 @@ public sealed class RecordingPipeline(
         // policy before production deployment rather than deleting source audio immediately.
         logger.LogInformation("Recording job {JobId} finished with status {Status}.", job.Id, job.Status);
     }
+    private static bool ShouldRunRefinement(RecordingChunk chunk)
+    {
+        if (string.IsNullOrWhiteSpace(chunk.RefinedTranscript)) return true;
+        if (string.IsNullOrWhiteSpace(chunk.ChunkSummaryJson)) return false;
+        try
+        {
+            using var document = JsonDocument.Parse(chunk.ChunkSummaryJson);
+            if (document.RootElement.ValueKind == JsonValueKind.Object &&
+                document.RootElement.TryGetProperty("refinementStatus", out var status))
+            {
+                var value = status.GetString();
+                return !string.Equals(value, "completed", StringComparison.OrdinalIgnoreCase) &&
+                       !string.Equals(value, "disabled", StringComparison.OrdinalIgnoreCase);
+            }
+        }
+        catch (JsonException) { }
+        // Legacy summary formats without status metadata are treated as completed.
+        return false;
+    }
+
+    private static string CreateRefinementSummary(string summary, string status, string? error = null) =>
+        JsonSerializer.Serialize(new { summary, refinementStatus = status, refinementError = error });
+
+    private static string GetSummaryForMom(string? summaryJson)
+    {
+        if (string.IsNullOrWhiteSpace(summaryJson)) return "";
+        try
+        {
+            using var document = JsonDocument.Parse(summaryJson);
+            if (document.RootElement.ValueKind == JsonValueKind.Object &&
+                document.RootElement.TryGetProperty("summary", out var summary))
+                return summary.ValueKind == JsonValueKind.String ? summary.GetString() ?? "" : summary.GetRawText();
+        }
+        catch (JsonException) { }
+        return summaryJson;
+    }
+
 }
