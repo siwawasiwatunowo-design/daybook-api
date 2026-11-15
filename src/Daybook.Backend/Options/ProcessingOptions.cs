@@ -35,9 +35,10 @@ public sealed class GeminiOptions
 {
     public string ApiKey { get; set; } = "";
     public string Model { get; set; } = "gemini-2.5-flash";
-    public string FallbackModel { get; set; } = "gemini-2.5-flash-lite";
+    public string FallbackModel { get; set; } = "gemini-3.5-flash-lite";
     public string EndpointBase { get; set; } = "https://generativelanguage.googleapis.com/v1beta/models";
     public int TimeoutMinutes { get; set; } = 5;
+    public int RequestTimeoutSeconds { get; set; } = 18;
 }
 
 public sealed class ActivityProfileOptions
