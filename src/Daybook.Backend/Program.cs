@@ -348,7 +348,7 @@ api.MapPost("/speaking/coach", async (SpeakingCoachRequest request, IOptions<Gem
     Be encouraging but candid. Do not confuse transcript quality with speaking ability. Mention that pauses, tone, pronunciation and vocal delivery cannot be assessed from this transcript-only endpoint.
     Transcript:
     {request.Transcript}
-    """;;
+    """;
     var payload = new { contents = new[] { new { parts = new[] { new { text = prompt } } } },
         generationConfig = new { temperature = 0.3 } };
     var candidates = new[] { cfg.Model, cfg.FallbackModel }.Where(x => !string.IsNullOrWhiteSpace(x))
