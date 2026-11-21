@@ -1,4 +1,5 @@
 using System.Text.Json;
+using Microsoft.EntityFrameworkCore;
 using Daybook.Backend.Domain;
 using Daybook.Backend.Infrastructure;
 using Daybook.Backend.Options;
@@ -18,12 +19,19 @@ public sealed class RecordingPipeline(
     IResultPublisher publisher,
     IOptions<WorkerOptions> workerOptions,
     IOptions<SttOptions> sttOptions,
+    DaybookDbContext db,
     ILogger<RecordingPipeline> logger) : IRecordingPipeline
 {
     public async Task ProcessAsync(Guid recordingId, CancellationToken ct)
     {
         var job = await jobs.GetAsync(recordingId, ct)
             ?? throw new InvalidOperationException($"Recording job {recordingId} was not found.");
+        job.ProcessingStage = "PreparingAudio";
+        job.ProcessingStep = 2;
+        job.ProcessingTotalSteps = 7;
+        job.ProcessingDetail = "Preparing audio for transcription";
+        await jobs.UpdateJobAsync(job, ct);
+
         var profile = !string.IsNullOrWhiteSpace(job.ProfileSnapshotJson)
             ? JsonSerializer.Deserialize<ActivityProcessingProfile>(job.ProfileSnapshotJson)
                 ?? await profiles.GetAsync(job.ActivityCode, ct)
@@ -40,6 +48,10 @@ public sealed class RecordingPipeline(
         var chunkPaths = await chunker.CreateChunksAsync(sourcePath, chunkDirectory, profile, ct);
         await jobs.EnsureChunksAsync(job.Id, chunkPaths, ct);
         var chunks = await jobs.GetChunksAsync(job.Id, ct);
+        job.ProcessingStage = "Transcription";
+        job.ProcessingStep = 3;
+        job.ProcessingDetail = "Transcribing audio chunks";
+        await jobs.UpdateJobAsync(job, ct);
         await publisher.PublishAsync(job, chunks.Count, chunks.Count(x => x.Status == ChunkStatus.Completed), [], ct);
         var needsReview = false;
         foreach (var chunk in chunks.OrderBy(x => x.Sequence))
@@ -137,6 +149,11 @@ public sealed class RecordingPipeline(
         await jobs.UpdateJobAsync(job, ct);
         await publisher.PublishAsync(job, chunks.Count, chunks.Count(x => x.Status == ChunkStatus.Completed), chunks, ct);
 
+        job.ProcessingStage = "Refinement";
+        job.ProcessingStep = 4;
+        job.ProcessingDetail = "Refining transcript and preserving source text";
+        await jobs.UpdateJobAsync(job, ct);
+
         // Give each optional Gemini operation its own bounded budget. A single slow
         // chunk must not consume the time reserved for every later chunk or final MoM.
         var aiTimedOut = false;
@@ -204,6 +221,11 @@ public sealed class RecordingPipeline(
         await jobs.UpdateJobAsync(job, ct);
         await publisher.PublishAsync(job, chunks.Count, chunks.Count(x => x.Status == ChunkStatus.Completed), chunks, ct);
 
+        job.ProcessingStage = "ContentAnalysis";
+        job.ProcessingStep = 5;
+        job.ProcessingDetail = "Preparing summary and context";
+        await jobs.UpdateJobAsync(job, ct);
+
         job.MomJson = "";
         if (profile.GenerateMom)
         {
@@ -233,36 +255,34 @@ public sealed class RecordingPipeline(
             }
         }
 
-        // Optional extension on the existing recording job. Coach failures never fail transcription.
-        if (job.EnableSpeakingCoach && !string.Equals(job.SpeakingCoachStatus, "Completed", StringComparison.OrdinalIgnoreCase))
+        // Speaking Coach is queued as a separate evaluation job. Recording/STT is complete
+        // regardless of Gemini availability; the evaluation worker reuses this saved transcript.
+        if (job.EnableSpeakingCoach)
         {
-            job.SpeakingCoachStatus = "Processing";
+            var alreadyQueued = await db.SpeakingCoachEvaluations.AnyAsync(
+                x => x.RecordingJobId == job.Id && x.Version == 1, ct);
+            if (!alreadyQueued)
+            {
+                db.SpeakingCoachEvaluations.Add(new SpeakingCoachEvaluation
+                {
+                    Id = Guid.NewGuid(),
+                    RecordingJobId = job.Id,
+                    UserId = job.UserId,
+                    Version = 1,
+                    Status = "Queued"
+                });
+            }
+            job.SpeakingCoachStatus = "Queued";
             job.SpeakingCoachError = null;
-            job.UpdatedAt = DateTimeOffset.UtcNow;
-            await jobs.UpdateJobAsync(job, ct);
-            await publisher.PublishAsync(job, chunks.Count, chunks.Count(x => x.Status == ChunkStatus.Completed), [], ct);
-            try
-            {
-                job.SpeakingCoachResult = await speakingCoach.EvaluateAsync(
-                    string.IsNullOrWhiteSpace(refinedTranscript) ? rawTranscript : refinedTranscript,
-                    job.SpeakingCoachTopic, ct);
-                job.SpeakingCoachStatus = "Completed";
-                job.SpeakingCoachError = null;
-            }
-            catch (OperationCanceledException) when (ct.IsCancellationRequested)
-            {
-                throw;
-            }
-            catch (Exception ex)
-            {
-                job.SpeakingCoachStatus = "Failed";
-                job.SpeakingCoachError = ex.Message.Length > 2000 ? ex.Message[..2000] : ex.Message;
-                logger.LogWarning(ex,
-                    "Speaking Coach failed for recording {RecordingId}; preserving completed transcription.", job.Id);
-            }
-            job.UpdatedAt = DateTimeOffset.UtcNow;
-            await jobs.UpdateJobAsync(job, ct);
-            await publisher.PublishAsync(job, chunks.Count, chunks.Count(x => x.Status == ChunkStatus.Completed), [], ct);
+            job.ProcessingStage = "SpeakingEvaluation";
+            job.ProcessingStep = 6;
+            job.ProcessingDetail = "Waiting for Speaking Coach evaluation";
+        }
+        else
+        {
+            job.ProcessingStage = "Finalizing";
+            job.ProcessingStep = 7;
+            job.ProcessingDetail = "Recording processing completed";
         }
 
         job.Status = needsReview ? JobStatus.NeedsReview : JobStatus.Completed;
@@ -273,6 +293,7 @@ public sealed class RecordingPipeline(
             : null;
         job.CompletedAt = DateTimeOffset.UtcNow;
         await jobs.UpdateJobAsync(job, ct);
+        await db.SaveChangesAsync(ct);
         await publisher.PublishAsync(job, chunks.Count, chunks.Count(x => x.Status == ChunkStatus.Completed), chunks, ct);
 
         // Temp audio is retained for now to support diagnosis/reprocessing. Add a retention
