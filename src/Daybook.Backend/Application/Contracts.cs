@@ -91,5 +91,5 @@ public interface IRecordingPipeline
 
 public interface ISpeakingCoachEvaluator
 {
-    Task<string> EvaluateAsync(string transcript, string? topic, CancellationToken ct);
+    Task<string> EvaluateAsync(string transcript, string? topic, CancellationToken ct, string? userFeedback = null);
 }
