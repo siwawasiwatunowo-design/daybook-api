@@ -67,3 +67,32 @@ ALTER TABLE "RecordingJobs" ADD COLUMN IF NOT EXISTS "SpeakingCoachTopic" text N
 ALTER TABLE "RecordingJobs" ADD COLUMN IF NOT EXISTS "SpeakingCoachStatus" varchar(32) NOT NULL DEFAULT 'NotRequested';
 ALTER TABLE "RecordingJobs" ADD COLUMN IF NOT EXISTS "SpeakingCoachResult" text NULL;
 ALTER TABLE "RecordingJobs" ADD COLUMN IF NOT EXISTS "SpeakingCoachError" text NULL;
+
+
+-- Detailed processing progress, used by the Android recording timeline.
+ALTER TABLE "RecordingJobs" ADD COLUMN IF NOT EXISTS "ProcessingStage" varchar(64) NOT NULL DEFAULT 'AudioUploaded';
+ALTER TABLE "RecordingJobs" ADD COLUMN IF NOT EXISTS "ProcessingStep" integer NOT NULL DEFAULT 1;
+ALTER TABLE "RecordingJobs" ADD COLUMN IF NOT EXISTS "ProcessingTotalSteps" integer NOT NULL DEFAULT 7;
+ALTER TABLE "RecordingJobs" ADD COLUMN IF NOT EXISTS "ProcessingDetail" text NULL;
+
+-- Durable Speaking Coach evaluation history and retry queue. Each manual re-evaluation
+-- creates a new version; previous results are never overwritten.
+CREATE TABLE IF NOT EXISTS "SpeakingCoachEvaluations" (
+  "Id" uuid PRIMARY KEY,
+  "RecordingJobId" uuid NOT NULL REFERENCES "RecordingJobs"("Id") ON DELETE CASCADE,
+  "UserId" varchar(128) NOT NULL,
+  "Version" integer NOT NULL,
+  "Feedback" text NULL,
+  "Status" varchar(32) NOT NULL DEFAULT 'Queued',
+  "Result" text NULL,
+  "Error" text NULL,
+  "AttemptCount" integer NOT NULL DEFAULT 0,
+  "NextAttemptAt" timestamptz NULL,
+  "CreatedAt" timestamptz NOT NULL,
+  "UpdatedAt" timestamptz NOT NULL,
+  "CompletedAt" timestamptz NULL
+);
+CREATE UNIQUE INDEX IF NOT EXISTS "IX_SpeakingCoachEvaluations_RecordingJobId_Version"
+  ON "SpeakingCoachEvaluations" ("RecordingJobId", "Version");
+CREATE INDEX IF NOT EXISTS "IX_SpeakingCoachEvaluations_Status_NextAttemptAt_CreatedAt"
+  ON "SpeakingCoachEvaluations" ("Status", "NextAttemptAt", "CreatedAt");

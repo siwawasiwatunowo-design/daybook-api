@@ -95,6 +95,7 @@ builder.Services.AddSingleton<NeonS3RecordingObjectStore>();
 builder.Services.AddSingleton<IRecordingObjectStore>(sp => sp.GetRequiredService<NeonS3RecordingObjectStore>());
 builder.Services.AddSingleton<IRecordingUploadUrlProvider>(sp => sp.GetRequiredService<NeonS3RecordingObjectStore>());
 builder.Services.AddHostedService<RecordingProcessingWorker>();
+builder.Services.AddHostedService<SpeakingCoachEvaluationWorker>();
 
 builder.Services.ConfigureHttpJsonOptions(options =>
     options.SerializerOptions.Converters.Add(new JsonStringEnumConverter()));
@@ -118,6 +119,7 @@ app.UseAuthorization();
 app.MapGet("/health", () => Results.Ok(new { status = "ok", service = "daybook-backend" }));
 
 var api = app.MapGroup("/api").RequireAuthorization();
+api.MapSpeakingCoachEvaluationEndpoints();
 
 api.MapPost("/recordings/upload-url", async (CreateUploadUrlRequest request, HttpContext http,
     IRecordingUploadUrlProvider uploadUrls, CancellationToken ct) =>

@@ -7,6 +7,7 @@ public sealed class DaybookDbContext(DbContextOptions<DaybookDbContext> options)
 {
     public DbSet<RecordingJob> RecordingJobs => Set<RecordingJob>();
     public DbSet<RecordingChunk> RecordingChunks => Set<RecordingChunk>();
+    public DbSet<SpeakingCoachEvaluation> SpeakingCoachEvaluations => Set<SpeakingCoachEvaluation>();
     public DbSet<TranscriptionBenchmark> TranscriptionBenchmarks => Set<TranscriptionBenchmark>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -21,6 +22,16 @@ public sealed class DaybookDbContext(DbContextOptions<DaybookDbContext> options)
             e.HasIndex(x => new { x.Status, x.CreatedAt });
             e.HasIndex(x => new { x.UserId, x.CreatedAt });
             e.HasMany(x => x.Chunks).WithOne().HasForeignKey(x => x.RecordingJobId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+        modelBuilder.Entity<SpeakingCoachEvaluation>(e =>
+        {
+            e.HasKey(x => x.Id);
+            e.Property(x => x.UserId).HasMaxLength(128).IsRequired();
+            e.Property(x => x.Status).HasMaxLength(32).IsRequired();
+            e.HasIndex(x => new { x.RecordingJobId, x.Version }).IsUnique();
+            e.HasIndex(x => new { x.Status, x.NextAttemptAt, x.CreatedAt });
+            e.HasOne<RecordingJob>().WithMany().HasForeignKey(x => x.RecordingJobId)
                 .OnDelete(DeleteBehavior.Cascade);
         });
         modelBuilder.Entity<TranscriptionBenchmark>(e =>

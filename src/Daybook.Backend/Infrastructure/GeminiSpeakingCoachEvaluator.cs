@@ -1,4 +1,6 @@
 using System.Text.Json;
+using System.Collections.Concurrent;
+using System.Net;
 using Daybook.Backend.Application;
 using Daybook.Backend.Options;
 using Microsoft.Extensions.Options;
@@ -6,15 +8,17 @@ using Microsoft.Extensions.Options;
 namespace Daybook.Backend.Infrastructure;
 
 /// <summary>
-/// Shared Gemini evaluator used by both the existing manual endpoint and the
-/// optional post-transcription stage in RecordingPipeline.
+/// Shared Gemini evaluator used by the durable Speaking Coach evaluation worker.
 /// </summary>
 public sealed class GeminiSpeakingCoachEvaluator(
     IOptions<GeminiOptions> geminiOptions,
     IHttpClientFactory clients,
+    IConfiguration configuration,
     ILogger<GeminiSpeakingCoachEvaluator> logger) : ISpeakingCoachEvaluator
 {
-    public async Task<string> EvaluateAsync(string transcript, string? topic, CancellationToken ct)
+    private static readonly ConcurrentDictionary<string, DateTimeOffset> ModelCooldowns = new(StringComparer.OrdinalIgnoreCase);
+
+    public async Task<string> EvaluateAsync(string transcript, string? topic, CancellationToken ct, string? userFeedback = null)
     {
         if (string.IsNullOrWhiteSpace(transcript))
             throw new ArgumentException("Transcript is required.", nameof(transcript));
@@ -54,6 +58,9 @@ public sealed class GeminiSpeakingCoachEvaluator(
         E. A retry prompt suitable for a 1-2 minute response.
 
         Be encouraging but candid. Do not confuse transcript quality with speaking ability. Mention that pauses, tone, pronunciation and vocal delivery cannot be assessed from this transcript-only endpoint.
+        User feedback about the previous evaluation (optional; use it as a request to re-check evidence, not as a fact):
+        {(string.IsNullOrWhiteSpace(userFeedback) ? "(none)" : userFeedback.Trim())}
+
         Transcript:
         {transcript}
         """;
@@ -63,87 +70,120 @@ public sealed class GeminiSpeakingCoachEvaluator(
             contents = new[] { new { parts = new[] { new { text = prompt } } } },
             generationConfig = new { temperature = 0.3 }
         };
-        var candidates = new[] { cfg.Model, cfg.FallbackModel }
+        var configuredFallbacks = configuration.GetSection("Gemini:FallbackModels").Get<string[]>() ?? [];
+        var candidates = new[] { cfg.Model }
+            .Concat(configuredFallbacks)
+            .Append(cfg.FallbackModel)
             .Where(x => !string.IsNullOrWhiteSpace(x))
-            .Distinct(StringComparer.OrdinalIgnoreCase);
+            .Select(x => x.Trim())
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
 
         string? lastFailure = null;
         foreach (var model in candidates)
         {
-            using var timeout = CancellationTokenSource.CreateLinkedTokenSource(ct);
-            var timeoutSeconds = Math.Clamp(cfg.RequestTimeoutSeconds, 5, 90);
-            timeout.CancelAfter(TimeSpan.FromSeconds(timeoutSeconds));
-            var client = clients.CreateClient("gemini");
-            client.Timeout = Timeout.InfiniteTimeSpan;
-            using var message = new HttpRequestMessage(
-                HttpMethod.Post, $"{cfg.EndpointBase.TrimEnd('/')}/{model}:generateContent");
-            message.Headers.Add("x-goog-api-key", cfg.ApiKey);
-            message.Content = JsonContent.Create(payload);
-
-            try
+            if (ModelCooldowns.TryGetValue(model, out var until) && until > DateTimeOffset.UtcNow)
             {
-                logger.LogInformation(
-                    "Speaking Coach calling Gemini model {GeminiModel} with timeout {TimeoutSeconds}s",
-                    model, timeoutSeconds);
-                using var response = await client.SendAsync(message, timeout.Token);
-                var body = await response.Content.ReadAsStringAsync(timeout.Token);
-                if (!response.IsSuccessStatusCode)
-                {
-                    lastFailure = $"Gemini model {model} returned HTTP {(int)response.StatusCode}: {body}";
-                    logger.LogWarning("Speaking Coach {Failure}", lastFailure.Length > 2000 ? lastFailure[..2000] : lastFailure);
-                    continue;
-                }
+                logger.LogInformation("Skipping Gemini model {GeminiModel}; circuit cooldown until {CooldownUntil}.", model, until);
+                continue;
+            }
 
-                using var document = JsonDocument.Parse(body);
-                if (document.RootElement.TryGetProperty("candidates", out var candidatesElement) &&
-                    candidatesElement.ValueKind == JsonValueKind.Array && candidatesElement.GetArrayLength() > 0)
+            // Retry only transient failures. Invalid requests/auth failures move to the next
+            // configured model without wasting time repeating the same request.
+            for (var attempt = 1; attempt <= 2; attempt++)
+            {
+                using var timeout = CancellationTokenSource.CreateLinkedTokenSource(ct);
+                var timeoutSeconds = Math.Clamp(cfg.RequestTimeoutSeconds, 5, 90);
+                timeout.CancelAfter(TimeSpan.FromSeconds(timeoutSeconds));
+                var client = clients.CreateClient("gemini");
+                client.Timeout = Timeout.InfiniteTimeSpan;
+                using var message = new HttpRequestMessage(
+                    HttpMethod.Post, $"{cfg.EndpointBase.TrimEnd('/')}/{model}:generateContent");
+                message.Headers.Add("x-goog-api-key", cfg.ApiKey);
+                message.Content = JsonContent.Create(payload);
+
+                try
                 {
-                    var candidate = candidatesElement[0];
-                    if (candidate.TryGetProperty("content", out var content) &&
-                        content.TryGetProperty("parts", out var parts) &&
-                        parts.ValueKind == JsonValueKind.Array)
+                    logger.LogInformation(
+                        "Speaking Coach calling Gemini model {GeminiModel}, attempt {Attempt}, timeout {TimeoutSeconds}s",
+                        model, attempt, timeoutSeconds);
+                    using var response = await client.SendAsync(message, timeout.Token);
+                    var body = await response.Content.ReadAsStringAsync(timeout.Token);
+                    if (!response.IsSuccessStatusCode)
                     {
-                        foreach (var part in parts.EnumerateArray())
+                        lastFailure = $"Gemini model {model} returned HTTP {(int)response.StatusCode}: {body}";
+                        var code = (int)response.StatusCode;
+                        var transient = response.StatusCode == HttpStatusCode.TooManyRequests ||
+                            code is 500 or 502 or 503 or 504;
+                        logger.LogWarning("Speaking Coach {Failure}", lastFailure.Length > 2000 ? lastFailure[..2000] : lastFailure);
+                        if (code == 404) ModelCooldowns[model] = DateTimeOffset.UtcNow.AddMinutes(30);
+                        else if (response.StatusCode == HttpStatusCode.TooManyRequests) ModelCooldowns[model] = DateTimeOffset.UtcNow.AddSeconds(30);
+                        else if (code is 500 or 502 or 503 or 504) ModelCooldowns[model] = DateTimeOffset.UtcNow.AddSeconds(45);
+                        if (transient && attempt < 2)
                         {
-                            if (part.TryGetProperty("text", out var textElement))
+                            var delay = response.Headers.RetryAfter?.Delta;
+                            await Task.Delay(delay is { } d ? TimeSpan.FromMilliseconds(Math.Clamp(d.TotalMilliseconds, 250, 3000))
+                                : TimeSpan.FromMilliseconds(500 * attempt), ct);
+                            continue;
+                        }
+                        break;
+                    }
+
+                    using var document = JsonDocument.Parse(body);
+                    if (document.RootElement.TryGetProperty("candidates", out var candidatesElement) &&
+                        candidatesElement.ValueKind == JsonValueKind.Array && candidatesElement.GetArrayLength() > 0)
+                    {
+                        var candidate = candidatesElement[0];
+                        if (candidate.TryGetProperty("content", out var content) &&
+                            content.TryGetProperty("parts", out var parts) &&
+                            parts.ValueKind == JsonValueKind.Array)
+                        {
+                            foreach (var part in parts.EnumerateArray())
                             {
-                                var text = textElement.GetString();
-                                if (!string.IsNullOrWhiteSpace(text))
+                                if (part.TryGetProperty("text", out var textElement))
                                 {
-                                    logger.LogInformation("Speaking Coach Gemini model {GeminiModel} succeeded", model);
-                                    return text;
+                                    var text = textElement.GetString();
+                                    if (!string.IsNullOrWhiteSpace(text))
+                                    {
+                                        ModelCooldowns.TryRemove(model, out _);
+                                        logger.LogInformation("Speaking Coach Gemini model {GeminiModel} succeeded", model);
+                                        return text;
+                                    }
                                 }
                             }
                         }
                     }
+                    lastFailure = $"Gemini model {model} returned no usable text candidate.";
+                    logger.LogWarning("Speaking Coach {Failure}", lastFailure);
+                    break;
                 }
-
-                lastFailure = $"Gemini model {model} returned no usable text candidate.";
-                logger.LogWarning("Speaking Coach {Failure}", lastFailure);
-            }
-            catch (OperationCanceledException) when (ct.IsCancellationRequested)
-            {
-                throw;
-            }
-            catch (OperationCanceledException ex)
-            {
-                lastFailure = $"Gemini model {model} timed out after {timeoutSeconds}s: {ex.Message}";
-                logger.LogWarning(ex, "Speaking Coach Gemini model {GeminiModel} timed out", model);
-            }
-            catch (HttpRequestException ex)
-            {
-                lastFailure = $"Gemini model {model} request failed: {ex.Message}";
-                logger.LogError(ex, "Speaking Coach Gemini model {GeminiModel} request failed", model);
-            }
-            catch (JsonException ex)
-            {
-                lastFailure = $"Gemini model {model} returned invalid JSON: {ex.Message}";
-                logger.LogError(ex, "Speaking Coach Gemini model {GeminiModel} returned invalid JSON", model);
-            }
-            catch (InvalidOperationException ex)
-            {
-                lastFailure = $"Gemini model {model} returned an unexpected response: {ex.Message}";
-                logger.LogError(ex, "Speaking Coach Gemini model {GeminiModel} returned an unexpected response", model);
+                catch (OperationCanceledException) when (ct.IsCancellationRequested) { throw; }
+                catch (OperationCanceledException ex)
+                {
+                    lastFailure = $"Gemini model {model} timed out after {timeoutSeconds}s: {ex.Message}";
+                    ModelCooldowns[model] = DateTimeOffset.UtcNow.AddMinutes(2);
+                    logger.LogWarning(ex, "Speaking Coach Gemini model {GeminiModel} timed out", model);
+                    break;
+                }
+                catch (HttpRequestException ex)
+                {
+                    lastFailure = $"Gemini model {model} request failed: {ex.Message}";
+                    ModelCooldowns[model] = DateTimeOffset.UtcNow.AddMinutes(1);
+                    logger.LogWarning(ex, "Speaking Coach Gemini model {GeminiModel} request failed", model);
+                    break;
+                }
+                catch (JsonException ex)
+                {
+                    lastFailure = $"Gemini model {model} returned invalid JSON: {ex.Message}";
+                    logger.LogError(ex, "Speaking Coach Gemini model {GeminiModel} returned invalid JSON", model);
+                    break;
+                }
+                catch (InvalidOperationException ex)
+                {
+                    lastFailure = $"Gemini model {model} returned an unexpected response: {ex.Message}";
+                    logger.LogError(ex, "Speaking Coach Gemini model {GeminiModel} returned an unexpected response", model);
+                    break;
+                }
             }
         }
 
