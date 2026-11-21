@@ -13,6 +13,11 @@ CREATE TABLE IF NOT EXISTS "RecordingJobs" (
   "RawTranscript" text NULL,
   "RefinedTranscript" text NULL,
   "MomJson" text NULL,
+  "EnableSpeakingCoach" boolean NOT NULL DEFAULT false,
+  "SpeakingCoachTopic" text NULL,
+  "SpeakingCoachStatus" varchar(32) NOT NULL DEFAULT 'NotRequested',
+  "SpeakingCoachResult" text NULL,
+  "SpeakingCoachError" text NULL,
   "CreatedAt" timestamptz NOT NULL,
   "UpdatedAt" timestamptz NOT NULL,
   "CompletedAt" timestamptz NULL
@@ -55,3 +60,10 @@ ALTER TABLE "RecordingChunks" ADD COLUMN IF NOT EXISTS "SelectedSttModel" varcha
 ALTER TABLE "RecordingChunks" ADD COLUMN IF NOT EXISTS "QualityMetricsJson" text NULL;
 ALTER TABLE "RecordingChunks" ADD COLUMN IF NOT EXISTS "SttAttemptsJson" text NULL;
 ALTER TABLE "RecordingChunks" ADD COLUMN IF NOT EXISTS "SttSegmentsJson" text NULL;
+
+-- Optional Speaking Coach extension on the existing RecordingJobs pipeline.
+ALTER TABLE "RecordingJobs" ADD COLUMN IF NOT EXISTS "EnableSpeakingCoach" boolean NOT NULL DEFAULT false;
+ALTER TABLE "RecordingJobs" ADD COLUMN IF NOT EXISTS "SpeakingCoachTopic" text NULL;
+ALTER TABLE "RecordingJobs" ADD COLUMN IF NOT EXISTS "SpeakingCoachStatus" varchar(32) NOT NULL DEFAULT 'NotRequested';
+ALTER TABLE "RecordingJobs" ADD COLUMN IF NOT EXISTS "SpeakingCoachResult" text NULL;
+ALTER TABLE "RecordingJobs" ADD COLUMN IF NOT EXISTS "SpeakingCoachError" text NULL;

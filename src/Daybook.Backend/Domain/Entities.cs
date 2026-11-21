@@ -19,6 +19,11 @@ public sealed class RecordingJob
     public string? RawTranscript { get; set; }
     public string? RefinedTranscript { get; set; }
     public string? MomJson { get; set; }
+    public bool EnableSpeakingCoach { get; set; }
+    public string? SpeakingCoachTopic { get; set; }
+    public string SpeakingCoachStatus { get; set; } = "NotRequested";
+    public string? SpeakingCoachResult { get; set; }
+    public string? SpeakingCoachError { get; set; }
     public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.UtcNow;
     public DateTimeOffset UpdatedAt { get; set; } = DateTimeOffset.UtcNow;
     public DateTimeOffset? CompletedAt { get; set; }
@@ -61,4 +66,5 @@ public sealed record RecordingChunkView(int Sequence, ChunkStatus Status, int At
 public sealed record RecordingJobView(Guid Id, string ActivityCode, JobStatus Status,
     int? DurationSeconds, int ChunkCount, int CompletedChunks, string? ErrorMessage,
     string? RawTranscript, string? RefinedTranscript, string? MomJson,
-    IReadOnlyList<RecordingChunkView> Chunks, DateTimeOffset CreatedAt, DateTimeOffset UpdatedAt);
+    IReadOnlyList<RecordingChunkView> Chunks, DateTimeOffset CreatedAt, DateTimeOffset UpdatedAt,
+    bool EnableSpeakingCoach, string SpeakingCoachStatus, string? SpeakingCoachResult, string? SpeakingCoachError);

@@ -20,7 +20,10 @@ public sealed class EfJobRepository(DaybookDbContext db, IOptions<WorkerOptions>
             Id = Guid.NewGuid(), UserId = userId, ActivityCode = request.ActivityCode.Trim(),
             AudioObjectName = request.AudioObjectName.Trim(), DurationSeconds = request.DurationSeconds,
             LanguageOverride = request.LanguageOverride, ProfileVersion = profile.Version,
-            ProfileSnapshotJson = JsonSerializer.Serialize(profile), Status = JobStatus.Queued
+            ProfileSnapshotJson = JsonSerializer.Serialize(profile), Status = JobStatus.Queued,
+            EnableSpeakingCoach = request.EnableSpeakingCoach,
+            SpeakingCoachTopic = request.EnableSpeakingCoach ? request.SpeakingCoachTopic : null,
+            SpeakingCoachStatus = request.EnableSpeakingCoach ? "Queued" : "NotRequested"
         };
         db.RecordingJobs.Add(job);
         await db.SaveChangesAsync(ct);
@@ -37,7 +40,8 @@ public sealed class EfJobRepository(DaybookDbContext db, IOptions<WorkerOptions>
             job.Chunks.OrderBy(x => x.Sequence).Select(x => new RecordingChunkView(x.Sequence, x.Status,
                 x.AttemptCount, x.SelectedSttModel, x.QualityMetricsJson, x.SttAttemptsJson,
                 x.SttSegmentsJson, x.ErrorMessage)).ToArray(),
-            job.CreatedAt, job.UpdatedAt);
+            job.CreatedAt, job.UpdatedAt, job.EnableSpeakingCoach, job.SpeakingCoachStatus,
+            job.SpeakingCoachResult, job.SpeakingCoachError);
     }
 
     public async Task<bool> RequestRetryAsync(Guid id, string userId, CancellationToken ct)
