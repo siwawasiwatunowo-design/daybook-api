@@ -56,32 +56,17 @@ public sealed class EfJobRepository(DaybookDbContext db, IOptions<WorkerOptions>
         var job = await db.RecordingJobs.Include(x => x.Chunks)
             .SingleOrDefaultAsync(x => x.Id == id && x.UserId == userId, ct);
         if (job is null || job.Status is JobStatus.Processing or JobStatus.Queued or JobStatus.Completed) return false;
-        var chunksToReset = job.Status == JobStatus.NeedsReview
-            ? job.Chunks
-            : job.Chunks.Where(x => x.Status != ChunkStatus.Completed);
-        foreach (var chunk in chunksToReset)
+        // Preserve every successful checkpoint. Only failed/incomplete chunks are retried;
+        // RecordingPipeline reuses completed STT output and can retry optional AI refinement.
+        foreach (var chunk in job.Chunks.Where(x => x.Status != ChunkStatus.Completed))
         {
             chunk.Status = ChunkStatus.Pending;
             chunk.ErrorMessage = null;
-            if (job.Status == JobStatus.NeedsReview)
-            {
-                chunk.RawTranscript = null;
-                chunk.RefinedTranscript = null;
-                chunk.ChunkSummaryJson = null;
-                chunk.SelectedSttModel = null;
-                chunk.QualityMetricsJson = null;
-                chunk.SttAttemptsJson = null;
-                chunk.SttSegmentsJson = null;
-            }
             chunk.UpdatedAt = DateTimeOffset.UtcNow;
         }
-        if (job.Status == JobStatus.NeedsReview)
-        {
-            job.RawTranscript = null;
-            job.RefinedTranscript = null;
-            job.MomJson = null;
-            job.CompletedAt = null;
-        }
+        // A NeedsReview job may already have a complete transcript. Keep it available
+        // while the pipeline retries only the optional stages that were not completed.
+        job.CompletedAt = null;
         job.Status = JobStatus.Queued;
         job.ErrorMessage = null;
         job.AttemptCount = 0;
