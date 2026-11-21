@@ -21,6 +21,12 @@ public sealed class RecordingJob
     public string? MomJson { get; set; }
     public bool EnableSpeakingCoach { get; set; }
     public string? SpeakingCoachTopic { get; set; }
+    public string PracticeTitle { get; set; } = "";
+    public string PracticeSessionId { get; set; } = "";
+    public int PracticeAttemptNumber { get; set; } = 1;
+    public string PracticePrompt { get; set; } = "";
+    public string PracticeMode { get; set; } = "SOLO";
+    public string SourceNoteId { get; set; } = "";
     public string SpeakingCoachStatus { get; set; } = "NotRequested";
     public string? SpeakingCoachResult { get; set; }
     public string? SpeakingCoachError { get; set; }
