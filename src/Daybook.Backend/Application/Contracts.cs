@@ -3,7 +3,8 @@ using Daybook.Backend.Options;
 
 namespace Daybook.Backend.Application;
 
-public sealed record CreateRecordingRequest(string ActivityCode, string AudioObjectName, int? DurationSeconds = null, string? LanguageOverride = null);
+public sealed record CreateRecordingRequest(string ActivityCode, string AudioObjectName, int? DurationSeconds = null,
+    string? LanguageOverride = null, bool EnableSpeakingCoach = false, string? SpeakingCoachTopic = null);
 
 public interface IJobRepository
 {
@@ -86,4 +87,9 @@ public interface IResultPublisher
 public interface IRecordingPipeline
 {
     Task ProcessAsync(Guid recordingId, CancellationToken ct);
+}
+
+public interface ISpeakingCoachEvaluator
+{
+    Task<string> EvaluateAsync(string transcript, string? topic, CancellationToken ct);
 }
