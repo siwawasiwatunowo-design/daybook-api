@@ -48,7 +48,7 @@ public static class PracticeHistoryEndpoints
                 status = job.Status.ToString(),
                 durationSeconds = job.DurationSeconds,
                 title = string.IsNullOrWhiteSpace(job.PracticeTitle)
-                    ? "Practice — " + (job.SpeakingCoachTopic ?? "Speaking Practice")
+                    ? "Practice — Latihan Sebelumnya"
                     : job.PracticeTitle,
                 practiceSessionId = string.IsNullOrWhiteSpace(job.PracticeSessionId)
                     ? job.Id.ToString()
