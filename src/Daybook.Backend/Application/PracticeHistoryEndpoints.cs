@@ -19,7 +19,6 @@ public static class PracticeHistoryEndpoints
                 .Where(x => x.UserId == userId && x.EnableSpeakingCoach)
                 .Include(x => x.Chunks)
                 .OrderByDescending(x => x.CreatedAt)
-                .Take(200)
                 .ToListAsync(ct);
 
             var ids = jobs.Select(x => x.Id).ToArray();
