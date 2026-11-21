@@ -78,11 +78,21 @@ public sealed class SpeakingCoachEvaluationWorker(
                     continue;
                 }
 
+                job.SpeakingCoachStatus = "Processing";
+                job.ProcessingStage = "SpeakingEvaluation";
+                job.ProcessingStep = 6;
+                job.ProcessingTotalSteps = 7;
+                job.ProcessingDetail = $"Evaluating Speaking Coach version {evaluation.Version}";
+                job.UpdatedAt = DateTimeOffset.UtcNow;
+                await db.SaveChangesAsync(stoppingToken);
+
                 try
                 {
                     var evaluator = scope.ServiceProvider.GetRequiredService<ISpeakingCoachEvaluator>();
+                    using var evaluationTimeout = CancellationTokenSource.CreateLinkedTokenSource(stoppingToken);
+                    evaluationTimeout.CancelAfter(TimeSpan.FromMinutes(5));
                     var result = await evaluator.EvaluateAsync(transcript, job.SpeakingCoachTopic,
-                        stoppingToken, evaluation.Feedback);
+                        evaluationTimeout.Token, evaluation.Feedback);
                     evaluation.Status = "Completed";
                     evaluation.Result = result;
                     evaluation.Error = null;
