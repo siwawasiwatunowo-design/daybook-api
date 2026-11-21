@@ -65,17 +65,20 @@ public sealed class FirestoreResultPublisher(string projectId, ILogger<Firestore
             else
                 await momDoc.DeleteAsync(cancellationToken: ct);
 
-            var coachDoc = recordingDoc.Collection("outputs").Document("speakingCoach");
-            if (!string.IsNullOrWhiteSpace(job.SpeakingCoachResult))
-                await coachDoc.SetAsync(
-                    new Dictionary<string, object>
-                    {
-                        ["coaching"] = job.SpeakingCoachResult,
-                        ["status"] = job.SpeakingCoachStatus,
-                        ["updatedAt"] = Timestamp.FromDateTime(DateTime.UtcNow)
-                    }, SetOptions.MergeAll, ct);
-            else
-                await coachDoc.DeleteAsync(cancellationToken: ct);
+            if (job.EnableSpeakingCoach)
+            {
+                var coachDoc = recordingDoc.Collection("outputs").Document("speakingCoach");
+                if (!string.IsNullOrWhiteSpace(job.SpeakingCoachResult))
+                    await coachDoc.SetAsync(
+                        new Dictionary<string, object>
+                        {
+                            ["coaching"] = job.SpeakingCoachResult,
+                            ["status"] = job.SpeakingCoachStatus,
+                            ["updatedAt"] = Timestamp.FromDateTime(DateTime.UtcNow)
+                        }, SetOptions.MergeAll, ct);
+                else
+                    await coachDoc.DeleteAsync(cancellationToken: ct);
+            }
         }
         catch (OperationCanceledException) when (ct.IsCancellationRequested)
         {
