@@ -1,4 +1,5 @@
 using System.Text.Json;
+using Daybook.Backend.Application;
 using Daybook.Backend.Options;
 using Microsoft.Extensions.Options;
 
@@ -22,10 +23,11 @@ public sealed class GeminiSpeakingCoachEvaluator(
         if (string.IsNullOrWhiteSpace(cfg.ApiKey))
             throw new InvalidOperationException("Gemini API is not configured.");
 
+        var topicText = string.IsNullOrWhiteSpace(topic) ? "(not supplied)" : topic.Trim();
         var prompt = $"""
         You are Daybook Speaking Coach. The user is completing a SOLO speaking-practice session.
         Respond in Indonesian unless the transcript is clearly in another language.
-        Practice topic: {topic?.Trim() is { Length: > 0 } value ? value : "(not supplied)"}
+        Practice topic: {topicText}
         Evaluate only what can reasonably be inferred from the transcript. Do not infer vocal tone, pace, confidence, pronunciation, body language or identity from text.
         If the transcript appears to contain multiple speakers or dialogue, clearly state that individual attribution is uncertain and do not claim that every utterance belongs to the user.
         The goal is to help the user learn to think and speak in a structured way, not to become dependent on AI.
