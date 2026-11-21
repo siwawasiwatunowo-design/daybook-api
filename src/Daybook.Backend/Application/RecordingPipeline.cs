@@ -14,6 +14,7 @@ public sealed class RecordingPipeline(
     ISpeechToTextProvider stt,
     ITranscriptQualityChecker qualityChecker,
     ITranscriptRefiner refiner,
+    ISpeakingCoachEvaluator speakingCoach,
     IResultPublisher publisher,
     IOptions<WorkerOptions> workerOptions,
     IOptions<SttOptions> sttOptions,
@@ -230,6 +231,38 @@ public sealed class RecordingPipeline(
                     job.Id);
                 needsReview = true;
             }
+        }
+
+        // Optional extension on the existing recording job. Coach failures never fail transcription.
+        if (job.EnableSpeakingCoach && !string.Equals(job.SpeakingCoachStatus, "Completed", StringComparison.OrdinalIgnoreCase))
+        {
+            job.SpeakingCoachStatus = "Processing";
+            job.SpeakingCoachError = null;
+            job.UpdatedAt = DateTimeOffset.UtcNow;
+            await jobs.UpdateJobAsync(job, ct);
+            await publisher.PublishAsync(job, chunks.Count, chunks.Count(x => x.Status == ChunkStatus.Completed), [], ct);
+            try
+            {
+                job.SpeakingCoachResult = await speakingCoach.EvaluateAsync(
+                    string.IsNullOrWhiteSpace(refinedTranscript) ? rawTranscript : refinedTranscript,
+                    job.SpeakingCoachTopic, ct);
+                job.SpeakingCoachStatus = "Completed";
+                job.SpeakingCoachError = null;
+            }
+            catch (OperationCanceledException) when (ct.IsCancellationRequested)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                job.SpeakingCoachStatus = "Failed";
+                job.SpeakingCoachError = ex.Message.Length > 2000 ? ex.Message[..2000] : ex.Message;
+                logger.LogWarning(ex,
+                    "Speaking Coach failed for recording {RecordingId}; preserving completed transcription.", job.Id);
+            }
+            job.UpdatedAt = DateTimeOffset.UtcNow;
+            await jobs.UpdateJobAsync(job, ct);
+            await publisher.PublishAsync(job, chunks.Count, chunks.Count(x => x.Status == ChunkStatus.Completed), [], ct);
         }
 
         job.Status = needsReview ? JobStatus.NeedsReview : JobStatus.Completed;
