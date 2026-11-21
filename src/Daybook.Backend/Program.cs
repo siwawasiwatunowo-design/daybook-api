@@ -308,7 +308,7 @@ api.MapPost("/notes/ai-assist", async (NoteAiAssistRequest request, IOptions<Gem
 
 
 api.MapPost("/speaking/coach", async (SpeakingCoachRequest request, IOptions<GeminiOptions> geminiOptions,
-    IHttpClientFactory clients, CancellationToken ct) =>
+    IHttpClientFactory clients, ILogger<Program> logger, CancellationToken ct) =>
 {
     if (string.IsNullOrWhiteSpace(request.Transcript))
         return Results.BadRequest(new { error = "Transcript is required." });
@@ -356,23 +356,54 @@ api.MapPost("/speaking/coach", async (SpeakingCoachRequest request, IOptions<Gem
     foreach (var model in candidates)
     {
         using var timeout = CancellationTokenSource.CreateLinkedTokenSource(ct);
-        timeout.CancelAfter(TimeSpan.FromSeconds(Math.Clamp(cfg.RequestTimeoutSeconds, 5, 60)));
-        var client = clients.CreateClient("gemini"); client.Timeout = Timeout.InfiniteTimeSpan;
+        var timeoutSeconds = Math.Clamp(cfg.RequestTimeoutSeconds, 5, 90);
+        timeout.CancelAfter(TimeSpan.FromSeconds(timeoutSeconds));
+        var client = clients.CreateClient("gemini");
+        client.Timeout = Timeout.InfiniteTimeSpan;
         using var message = new HttpRequestMessage(HttpMethod.Post, $"{cfg.EndpointBase.TrimEnd('/')}/{model}:generateContent");
-        message.Headers.Add("x-goog-api-key", cfg.ApiKey); message.Content = JsonContent.Create(payload);
+        message.Headers.Add("x-goog-api-key", cfg.ApiKey);
+        message.Content = JsonContent.Create(payload);
         try
         {
+            logger.LogInformation("Speaking Coach calling Gemini model {GeminiModel} with timeout {TimeoutSeconds}s", model, timeoutSeconds);
             using var response = await client.SendAsync(message, timeout.Token);
             var body = await response.Content.ReadAsStringAsync(timeout.Token);
-            if (!response.IsSuccessStatusCode) continue;
+            if (!response.IsSuccessStatusCode)
+            {
+                logger.LogWarning("Speaking Coach Gemini model {GeminiModel} returned HTTP {StatusCode}: {ResponseBody}",
+                    model, (int)response.StatusCode, body.Length > 2000 ? body[..2000] : body);
+                continue;
+            }
+
             using var doc = JsonDocument.Parse(body);
-            var text = doc.RootElement.GetProperty("candidates")[0].GetProperty("content").GetProperty("parts")[0].GetProperty("text").GetString();
-            if (!string.IsNullOrWhiteSpace(text)) return Results.Ok(new { coaching = text });
+            var coaching = doc.RootElement.GetProperty("candidates")[0].GetProperty("content")
+                .GetProperty("parts")[0].GetProperty("text").GetString();
+            if (!string.IsNullOrWhiteSpace(coaching))
+            {
+                logger.LogInformation("Speaking Coach Gemini model {GeminiModel} succeeded", model);
+                return Results.Ok(new { coaching });
+            }
+
+            logger.LogWarning("Speaking Coach Gemini model {GeminiModel} returned an empty response", model);
         }
         catch (OperationCanceledException) when (ct.IsCancellationRequested) { throw; }
-        catch (OperationCanceledException) { } catch (HttpRequestException) { } catch (JsonException) { }
+        catch (OperationCanceledException ex)
+        {
+            logger.LogWarning(ex, "Speaking Coach Gemini model {GeminiModel} timed out after {TimeoutSeconds}s",
+                model, timeoutSeconds);
+        }
+        catch (HttpRequestException ex)
+        {
+            logger.LogError(ex, "Speaking Coach Gemini model {GeminiModel} request failed", model);
+        }
+        catch (JsonException ex)
+        {
+            logger.LogError(ex, "Speaking Coach Gemini model {GeminiModel} returned invalid JSON", model);
+        }
     }
-    return Results.Problem("Speaking Coach is temporarily unavailable.", statusCode: 502);
+    logger.LogError("Speaking Coach failed for all configured Gemini models. Primary={PrimaryModel}; Fallback={FallbackModel}",
+        cfg.Model, cfg.FallbackModel);
+    return Results.Problem("Speaking Coach is temporarily unavailable. Check backend logs for Gemini HTTP status or timeout details.", statusCode: 502);
 });
 
 
