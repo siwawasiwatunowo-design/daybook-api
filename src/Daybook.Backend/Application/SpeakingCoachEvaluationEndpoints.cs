@@ -9,7 +9,7 @@ public static class SpeakingCoachEvaluationEndpoints
     public static RouteGroupBuilder MapSpeakingCoachEvaluationEndpoints(this RouteGroupBuilder api)
     {
         api.MapPost("/recordings/{id:guid}/speaking-coach/evaluations",
-            async (Guid id, CreateSpeakingCoachEvaluationRequest request, HttpContext http,
+            async Task<IResult> (Guid id, CreateSpeakingCoachEvaluationRequest request, HttpContext http,
                 DaybookDbContext db, CancellationToken ct) =>
             {
                 var userId = http.User.FindFirst("user_id")?.Value ?? http.User.FindFirst("sub")?.Value;
@@ -22,6 +22,11 @@ public static class SpeakingCoachEvaluationEndpoints
                 var transcript = string.IsNullOrWhiteSpace(job.RefinedTranscript) ? job.RawTranscript : job.RefinedTranscript;
                 if (!job.EnableSpeakingCoach || string.IsNullOrWhiteSpace(transcript))
                     return Results.Conflict(new { error = "Speaking Coach is not available for this recording yet." });
+
+                var hasActiveEvaluation = await db.SpeakingCoachEvaluations.AnyAsync(
+                    x => x.RecordingJobId == id && (x.Status == "Queued" || x.Status == "Processing" || x.Status == "RetryPending"), ct);
+                if (hasActiveEvaluation)
+                    return Results.Conflict(new { error = "A Speaking Coach evaluation is already queued or running." });
 
                 var latestVersion = await db.SpeakingCoachEvaluations
                     .Where(x => x.RecordingJobId == id).Select(x => (int?)x.Version).MaxAsync(ct) ?? 0;
@@ -50,7 +55,7 @@ public static class SpeakingCoachEvaluationEndpoints
             });
 
         api.MapGet("/recordings/{id:guid}/speaking-coach/evaluations",
-            async (Guid id, HttpContext http, DaybookDbContext db, CancellationToken ct) =>
+            async Task<IResult> (Guid id, HttpContext http, DaybookDbContext db, CancellationToken ct) =>
             {
                 var userId = http.User.FindFirst("user_id")?.Value ?? http.User.FindFirst("sub")?.Value;
                 if (string.IsNullOrWhiteSpace(userId)) return Results.Unauthorized();
