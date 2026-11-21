@@ -23,11 +23,11 @@ public static class PracticeProgressEndpoints
                 .OrderByDescending(x => x.CreatedAt)
                 .ToListAsync(ct);
 
-            var sessionKey = (string value, Guid id) =>
+            static string SessionKey(string value, Guid id) =>
                 string.IsNullOrWhiteSpace(value) ? id.ToString() : value;
 
             var totalSessions = jobs
-                .Select(x => sessionKey(x.PracticeSessionId, x.Id))
+                .Select(x => SessionKey(x.PracticeSessionId, x.Id))
                 .Distinct(StringComparer.Ordinal)
                 .Count();
             var evaluatedAttempts = evaluations
@@ -36,8 +36,9 @@ public static class PracticeProgressEndpoints
                 .Distinct()
                 .Count();
 
-            var today = DateTimeOffset.UtcNow.Date;
-            var currentWeekStart = today.AddDays(-(((int)today.DayOfWeek + 6) % 7));
+            var now = DateTimeOffset.UtcNow;
+            var utcMidnight = new DateTimeOffset(now.Year, now.Month, now.Day, 0, 0, 0, TimeSpan.Zero);
+            var currentWeekStart = utcMidnight.AddDays(-(((int)utcMidnight.DayOfWeek + 6) % 7));
             var weeks = Enumerable.Range(0, 8).Select(offset =>
             {
                 var start = currentWeekStart.AddDays(-7 * (7 - offset));
