@@ -259,24 +259,39 @@ public sealed class RecordingPipeline(
         // regardless of Gemini availability; the evaluation worker reuses this saved transcript.
         if (job.EnableSpeakingCoach)
         {
-            var alreadyQueued = await db.SpeakingCoachEvaluations.AnyAsync(
-                x => x.RecordingJobId == job.Id && x.Version == 1, ct);
-            if (!alreadyQueued)
+            var existingEvaluation = await db.SpeakingCoachEvaluations
+                .Where(x => x.RecordingJobId == job.Id)
+                .OrderByDescending(x => x.Version)
+                .FirstOrDefaultAsync(ct);
+            if (existingEvaluation is null)
             {
-                db.SpeakingCoachEvaluations.Add(new SpeakingCoachEvaluation
+                existingEvaluation = new SpeakingCoachEvaluation
                 {
                     Id = Guid.NewGuid(),
                     RecordingJobId = job.Id,
                     UserId = job.UserId,
                     Version = 1,
                     Status = "Queued"
-                });
+                };
+                db.SpeakingCoachEvaluations.Add(existingEvaluation);
             }
-            job.SpeakingCoachStatus = "Queued";
-            job.SpeakingCoachError = null;
-            job.ProcessingStage = "SpeakingEvaluation";
-            job.ProcessingStep = 6;
-            job.ProcessingDetail = "Waiting for Speaking Coach evaluation";
+            job.SpeakingCoachStatus = existingEvaluation.Status;
+            job.SpeakingCoachResult = existingEvaluation.Result;
+            job.SpeakingCoachError = existingEvaluation.Error;
+            if (string.Equals(existingEvaluation.Status, "Completed", StringComparison.OrdinalIgnoreCase))
+            {
+                job.ProcessingStage = "Completed";
+                job.ProcessingStep = 7;
+                job.ProcessingDetail = $"Speaking Coach evaluation version {existingEvaluation.Version} already completed";
+            }
+            else
+            {
+                job.ProcessingStage = existingEvaluation.Status == "Failed" ? "EvaluationNeedsAttention" : "SpeakingEvaluation";
+                job.ProcessingStep = 6;
+                job.ProcessingDetail = existingEvaluation.Status == "RetryPending"
+                    ? "Speaking Coach retry is scheduled"
+                    : "Waiting for Speaking Coach evaluation";
+            }
         }
         else
         {
