@@ -1,0 +1,25 @@
+name: .NET Backend CI
+
+on:
+  push:
+    branches:
+      - main
+      - "feature/**"
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+      - name: Restore
+        run: dotnet restore tests/Daybook.Backend.Tests/Daybook.Backend.Tests.csproj
+      - name: Build backend
+        run: dotnet build src/Daybook.Backend/Daybook.Backend.csproj --configuration Release --no-restore
+      - name: Run tests
+        run: dotnet test tests/Daybook.Backend.Tests/Daybook.Backend.Tests.csproj --configuration Release --no-restore
