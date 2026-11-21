@@ -41,7 +41,8 @@ public sealed class EfJobRepository(DaybookDbContext db, IOptions<WorkerOptions>
                 x.AttemptCount, x.SelectedSttModel, x.QualityMetricsJson, x.SttAttemptsJson,
                 x.SttSegmentsJson, x.ErrorMessage)).ToArray(),
             job.CreatedAt, job.UpdatedAt, job.EnableSpeakingCoach, job.SpeakingCoachStatus,
-            job.SpeakingCoachResult, job.SpeakingCoachError);
+            job.SpeakingCoachResult, job.SpeakingCoachError, job.ProcessingStage,
+            job.ProcessingStep, job.ProcessingTotalSteps, job.ProcessingDetail);
     }
 
     public async Task<bool> RequestRetryAsync(Guid id, string userId, CancellationToken ct)
