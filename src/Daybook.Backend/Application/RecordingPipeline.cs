@@ -280,7 +280,7 @@ public sealed class RecordingPipeline(
         }
         else
         {
-            job.ProcessingStage = "Finalizing";
+            job.ProcessingStage = "Completed";
             job.ProcessingStep = 7;
             job.ProcessingDetail = "Recording processing completed";
         }
