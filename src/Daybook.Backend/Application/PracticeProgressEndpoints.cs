@@ -47,7 +47,7 @@ public static class PracticeProgressEndpoints
                 return new
                 {
                     weekStart = start.ToString("yyyy-MM-dd"),
-                    sessions = weekJobs.Select(x => sessionKey(x.PracticeSessionId, x.Id))
+                    sessions = weekJobs.Select(x => SessionKey(x.PracticeSessionId, x.Id))
                         .Distinct(StringComparer.Ordinal).Count(),
                     attempts = weekJobs.Length,
                     practiceSeconds = weekJobs.Sum(x => Math.Max(0, x.DurationSeconds ?? 0)),
