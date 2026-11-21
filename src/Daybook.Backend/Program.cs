@@ -79,6 +79,7 @@ builder.Services.AddScoped<IAudioChunker, FfmpegAudioChunker>();
 builder.Services.AddScoped<ISpeechToTextProvider, GroqSpeechToTextProvider>();
 builder.Services.AddScoped<ITranscriptRefiner, GeminiTranscriptRefiner>();
 builder.Services.AddScoped<ITranscriptQualityChecker, HeuristicTranscriptQualityChecker>();
+builder.Services.AddScoped<ISpeakingCoachEvaluator, GeminiSpeakingCoachEvaluator>();
 builder.Services.AddSingleton<IAmazonS3>(sp =>
 {
     var storage = sp.GetRequiredService<IOptions<StorageOptions>>().Value;
@@ -307,103 +308,30 @@ api.MapPost("/notes/ai-assist", async (NoteAiAssistRequest request, IOptions<Gem
 });
 
 
-api.MapPost("/speaking/coach", async (SpeakingCoachRequest request, IOptions<GeminiOptions> geminiOptions,
-    IHttpClientFactory clients, ILogger<Program> logger, CancellationToken ct) =>
+api.MapPost("/speaking/coach", async (SpeakingCoachRequest request,
+    ISpeakingCoachEvaluator evaluator, CancellationToken ct) =>
 {
     if (string.IsNullOrWhiteSpace(request.Transcript))
         return Results.BadRequest(new { error = "Transcript is required." });
     if (request.Transcript.Length > 50000)
         return Results.BadRequest(new { error = "Transcript exceeds the 50,000 character limit." });
-    var cfg = geminiOptions.Value;
-    if (string.IsNullOrWhiteSpace(cfg.ApiKey))
-        return Results.Problem("Gemini API is not configured.", statusCode: 503);
-    var prompt = $"""
-    You are Daybook Speaking Coach. The user is completing a SOLO speaking-practice session.
-    Respond in Indonesian unless the transcript is clearly in another language.
-    Evaluate only what can reasonably be inferred from the transcript. Do not infer vocal tone, pace, confidence, pronunciation, body language or identity from text.
-    If the transcript appears to contain multiple speakers or dialogue, clearly state that individual attribution is uncertain and do not claim that every utterance belongs to the user.
-    The goal is to help the user learn to think and speak in a structured way, not to become dependent on AI.
 
-    Return constructive, specific feedback using exactly these six dimensions:
-    1. Structure — Is there a clear opening/context, main point, supporting explanation, and conclusion?
-    2. Clarity — Can a listener understand the ideas without guessing missing links?
-    3. Context — Does the speaker give enough background for a listener who is unfamiliar with the topic?
-    4. Reasoning — Are claims supported by reasons, examples, evidence, or logical connections?
-    5. Conciseness — Is the message focused, with unnecessary repetition or detours identified?
-    6. Conclusion — Does the speaker close with a clear takeaway, decision, or next step when appropriate?
-
-    For EACH dimension:
-    - Give an assessment in plain language (do not give numeric scores or pretend this is an objective measurement).
-    - Quote a short, exact excerpt from the transcript as evidence. If there is no useful evidence, say so instead of inventing a quote.
-    - Explain why the excerpt helps or weakens the communication.
-    - Give one practical improvement.
-
-    Then include:
-    A. What the speaker successfully communicated (brief summary).
-    B. The 1-3 highest-impact improvements, prioritized.
-    C. A better-structured example that preserves the speaker's meaning and does not invent facts.
-    D. One focused exercise for the next attempt.
-    E. A retry prompt suitable for a 1-2 minute response.
-
-    Be encouraging but candid. Do not confuse transcript quality with speaking ability. Mention that pauses, tone, pronunciation and vocal delivery cannot be assessed from this transcript-only endpoint.
-    Transcript:
-    {request.Transcript}
-    """;
-    var payload = new { contents = new[] { new { parts = new[] { new { text = prompt } } } },
-        generationConfig = new { temperature = 0.3 } };
-    var candidates = new[] { cfg.Model, cfg.FallbackModel }.Where(x => !string.IsNullOrWhiteSpace(x))
-        .Distinct(StringComparer.OrdinalIgnoreCase);
-    foreach (var model in candidates)
+    try
     {
-        using var timeout = CancellationTokenSource.CreateLinkedTokenSource(ct);
-        var timeoutSeconds = Math.Clamp(cfg.RequestTimeoutSeconds, 5, 90);
-        timeout.CancelAfter(TimeSpan.FromSeconds(timeoutSeconds));
-        var client = clients.CreateClient("gemini");
-        client.Timeout = Timeout.InfiniteTimeSpan;
-        using var message = new HttpRequestMessage(HttpMethod.Post, $"{cfg.EndpointBase.TrimEnd('/')}/{model}:generateContent");
-        message.Headers.Add("x-goog-api-key", cfg.ApiKey);
-        message.Content = JsonContent.Create(payload);
-        try
-        {
-            logger.LogInformation("Speaking Coach calling Gemini model {GeminiModel} with timeout {TimeoutSeconds}s", model, timeoutSeconds);
-            using var response = await client.SendAsync(message, timeout.Token);
-            var body = await response.Content.ReadAsStringAsync(timeout.Token);
-            if (!response.IsSuccessStatusCode)
-            {
-                logger.LogWarning("Speaking Coach Gemini model {GeminiModel} returned HTTP {StatusCode}: {ResponseBody}",
-                    model, (int)response.StatusCode, body.Length > 2000 ? body[..2000] : body);
-                continue;
-            }
-
-            using var doc = JsonDocument.Parse(body);
-            var coaching = doc.RootElement.GetProperty("candidates")[0].GetProperty("content")
-                .GetProperty("parts")[0].GetProperty("text").GetString();
-            if (!string.IsNullOrWhiteSpace(coaching))
-            {
-                logger.LogInformation("Speaking Coach Gemini model {GeminiModel} succeeded", model);
-                return Results.Ok(new { coaching });
-            }
-
-            logger.LogWarning("Speaking Coach Gemini model {GeminiModel} returned an empty response", model);
-        }
-        catch (OperationCanceledException) when (ct.IsCancellationRequested) { throw; }
-        catch (OperationCanceledException ex)
-        {
-            logger.LogWarning(ex, "Speaking Coach Gemini model {GeminiModel} timed out after {TimeoutSeconds}s",
-                model, timeoutSeconds);
-        }
-        catch (HttpRequestException ex)
-        {
-            logger.LogError(ex, "Speaking Coach Gemini model {GeminiModel} request failed", model);
-        }
-        catch (JsonException ex)
-        {
-            logger.LogError(ex, "Speaking Coach Gemini model {GeminiModel} returned invalid JSON", model);
-        }
+        var coaching = await evaluator.EvaluateAsync(request.Transcript, null, ct);
+        return Results.Ok(new { coaching });
     }
-    logger.LogError("Speaking Coach failed for all configured Gemini models. Primary={PrimaryModel}; Fallback={FallbackModel}",
-        cfg.Model, cfg.FallbackModel);
-    return Results.Problem("Speaking Coach is temporarily unavailable. Check backend logs for Gemini HTTP status or timeout details.", statusCode: 502);
+    catch (OperationCanceledException) when (ct.IsCancellationRequested)
+    {
+        throw;
+    }
+    catch (Exception ex)
+    {
+        return Results.Problem(
+            "Speaking Coach is temporarily unavailable. Check backend logs for Gemini failure details.",
+            statusCode: 502,
+            extensions: new Dictionary<string, object?> { ["detail"] = ex.Message });
+    }
 });
 
 
