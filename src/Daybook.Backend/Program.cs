@@ -119,7 +119,8 @@ app.UseAuthorization();
 app.MapGet("/health", () => Results.Ok(new { status = "ok", service = "daybook-backend" }));
 
 var api = app.MapGroup("/api").RequireAuthorization();
-api.MapSpeakingCoachEvaluationEndpoints();\napi.MapPracticeHistoryEndpoints();
+api.MapSpeakingCoachEvaluationEndpoints();
+api.MapPracticeHistoryEndpoints();
 
 api.MapPost("/recordings/upload-url", async (CreateUploadUrlRequest request, HttpContext http,
     IRecordingUploadUrlProvider uploadUrls, CancellationToken ct) =>
