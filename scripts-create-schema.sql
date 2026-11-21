@@ -96,3 +96,14 @@ CREATE UNIQUE INDEX IF NOT EXISTS "IX_SpeakingCoachEvaluations_RecordingJobId_Ve
   ON "SpeakingCoachEvaluations" ("RecordingJobId", "Version");
 CREATE INDEX IF NOT EXISTS "IX_SpeakingCoachEvaluations_Status_NextAttemptAt_CreatedAt"
   ON "SpeakingCoachEvaluations" ("Status", "NextAttemptAt", "CreatedAt");
+
+
+// Cloud-backed Solo Practice metadata. Additive and safe for existing installations.
+ALTER TABLE "RecordingJobs" ADD COLUMN IF NOT EXISTS "PracticeTitle" varchar(300) NOT NULL DEFAULT '';
+ALTER TABLE "RecordingJobs" ADD COLUMN IF NOT EXISTS "PracticeSessionId" varchar(128) NOT NULL DEFAULT '';
+ALTER TABLE "RecordingJobs" ADD COLUMN IF NOT EXISTS "PracticeAttemptNumber" integer NOT NULL DEFAULT 1;
+ALTER TABLE "RecordingJobs" ADD COLUMN IF NOT EXISTS "PracticePrompt" text NOT NULL DEFAULT '';
+ALTER TABLE "RecordingJobs" ADD COLUMN IF NOT EXISTS "PracticeMode" varchar(32) NOT NULL DEFAULT '';
+ALTER TABLE "RecordingJobs" ADD COLUMN IF NOT EXISTS "SourceNoteId" varchar(128) NOT NULL DEFAULT '';
+CREATE INDEX IF NOT EXISTS "IX_RecordingJobs_UserId_EnableSpeakingCoach_CreatedAt"
+  ON "RecordingJobs" ("UserId", "EnableSpeakingCoach", "CreatedAt");

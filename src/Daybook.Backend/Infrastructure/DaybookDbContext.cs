@@ -19,6 +19,11 @@ public sealed class DaybookDbContext(DbContextOptions<DaybookDbContext> options)
             e.Property(x => x.ActivityCode).HasMaxLength(80).IsRequired();
             e.Property(x => x.AudioObjectName).HasMaxLength(1024).IsRequired();
             e.Property(x => x.ProfileVersion).HasMaxLength(40).IsRequired();
+            e.Property(x => x.PracticeTitle).HasMaxLength(300);
+            e.Property(x => x.PracticeSessionId).HasMaxLength(128);
+            e.Property(x => x.PracticeMode).HasMaxLength(32);
+            e.Property(x => x.SourceNoteId).HasMaxLength(128);
+            e.HasIndex(x => new { x.UserId, x.EnableSpeakingCoach, x.CreatedAt });
             e.HasIndex(x => new { x.Status, x.CreatedAt });
             e.HasIndex(x => new { x.UserId, x.CreatedAt });
             e.HasMany(x => x.Chunks).WithOne().HasForeignKey(x => x.RecordingJobId)
