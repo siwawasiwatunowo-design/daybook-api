@@ -4,7 +4,9 @@ using Daybook.Backend.Options;
 namespace Daybook.Backend.Application;
 
 public sealed record CreateRecordingRequest(string ActivityCode, string AudioObjectName, int? DurationSeconds = null,
-    string? LanguageOverride = null, bool EnableSpeakingCoach = false, string? SpeakingCoachTopic = null,\n    string? PracticeTitle = null, string? PracticeSessionId = null, int PracticeAttemptNumber = 1,\n    string? PracticePrompt = null, string? PracticeMode = null, string? SourceNoteId = null);
+    string? LanguageOverride = null, bool EnableSpeakingCoach = false, string? SpeakingCoachTopic = null,
+    string? PracticeTitle = null, string? PracticeSessionId = null, int PracticeAttemptNumber = 1,
+    string? PracticePrompt = null, string? PracticeMode = null, string? SourceNoteId = null);
 
 public interface IJobRepository
 {
