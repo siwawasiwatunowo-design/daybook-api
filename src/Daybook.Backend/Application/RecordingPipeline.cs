@@ -15,7 +15,6 @@ public sealed class RecordingPipeline(
     ISpeechToTextProvider stt,
     ITranscriptQualityChecker qualityChecker,
     ITranscriptRefiner refiner,
-    ISpeakingCoachEvaluator speakingCoach,
     IResultPublisher publisher,
     IOptions<WorkerOptions> workerOptions,
     IOptions<SttOptions> sttOptions,
