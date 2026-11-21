@@ -375,6 +375,64 @@ api.MapPost("/speaking/coach", async (SpeakingCoachRequest request, IOptions<Gem
     return Results.Problem("Speaking Coach is temporarily unavailable.", statusCode: 502);
 });
 
+
+api.MapPost("/speaking/compare", async (SpeakingCompareRequest request, IOptions<GeminiOptions> geminiOptions,
+    IHttpClientFactory clients, CancellationToken ct) =>
+{
+    if (string.IsNullOrWhiteSpace(request.EarlierTranscript) || string.IsNullOrWhiteSpace(request.LaterTranscript))
+        return Results.BadRequest(new { error = "Both attempt transcripts are required." });
+    if (request.EarlierTranscript.Length > 50000 || request.LaterTranscript.Length > 50000)
+        return Results.BadRequest(new { error = "Each transcript must be at most 50,000 characters." });
+    var cfg = geminiOptions.Value;
+    if (string.IsNullOrWhiteSpace(cfg.ApiKey))
+        return Results.Problem("Gemini API is not configured.", statusCode: 503);
+
+    var prompt = $"""
+    You are Daybook Speaking Coach comparing two SOLO practice attempts by the same user.
+    Respond in Indonesian unless both transcripts are clearly in another language.
+    Topic: {request.Topic ?? "(not supplied)"}
+    Earlier attempt:
+    {request.EarlierTranscript}
+    Later attempt:
+    {request.LaterTranscript}
+
+    Compare only evidence visible in the transcripts. Do not infer vocal tone, pace, confidence, pronunciation, body language, or facts not stated.
+    Do not assign numeric scores. Do not assume the later attempt is better merely because it is later.
+    Return concise Markdown with:
+    1. **Perubahan yang terlihat** — compare Structure, Clarity, Context, Reasoning, Conciseness, and Conclusion; for each, say improved / similar / needs attention only when evidence supports it.
+    2. **Evidence** — quote short exact excerpts from both attempts and explain the difference. Never invent quotes.
+    3. **Kemajuan utama** — the most meaningful improvement, if any.
+    4. **Hal yang masih berulang** — recurring weakness supported by both transcripts.
+    5. **Fokus latihan berikutnya** — one specific exercise.
+    6. **Encouragement** — brief, candid and constructive.
+    If transcripts are too short or too different in topic to compare fairly, say so explicitly.
+    """;
+    var payload = new { contents = new[] { new { parts = new[] { new { text = prompt } } } },
+        generationConfig = new { temperature = 0.25 } };
+    var candidates = new[] { cfg.Model, cfg.FallbackModel }.Where(x => !string.IsNullOrWhiteSpace(x))
+        .Distinct(StringComparer.OrdinalIgnoreCase);
+    foreach (var model in candidates)
+    {
+        using var timeout = CancellationTokenSource.CreateLinkedTokenSource(ct);
+        timeout.CancelAfter(TimeSpan.FromSeconds(Math.Clamp(cfg.RequestTimeoutSeconds, 5, 60)));
+        var client = clients.CreateClient("gemini"); client.Timeout = Timeout.InfiniteTimeSpan;
+        using var message = new HttpRequestMessage(HttpMethod.Post, $"{cfg.EndpointBase.TrimEnd('/')}/{model}:generateContent");
+        message.Headers.Add("x-goog-api-key", cfg.ApiKey); message.Content = JsonContent.Create(payload);
+        try
+        {
+            using var response = await client.SendAsync(message, timeout.Token);
+            var body = await response.Content.ReadAsStringAsync(timeout.Token);
+            if (!response.IsSuccessStatusCode) continue;
+            using var doc = JsonDocument.Parse(body);
+            var text = doc.RootElement.GetProperty("candidates")[0].GetProperty("content").GetProperty("parts")[0].GetProperty("text").GetString();
+            if (!string.IsNullOrWhiteSpace(text)) return Results.Ok(new { comparison = text });
+        }
+        catch (OperationCanceledException) when (ct.IsCancellationRequested) { throw; }
+        catch (OperationCanceledException) { } catch (HttpRequestException) { } catch (JsonException) { }
+    }
+    return Results.Problem("Speaking Coach comparison is temporarily unavailable.", statusCode: 502);
+});
+
 // Runs a real model comparison on a user-owned audio object against a manually verified reference transcript.
 // This is the only reliable way in this solution to measure WER; heuristic QC is not an accuracy metric.
 api.MapPost("/benchmarks/transcription", async (TranscriptionBenchmarkRequest request, HttpContext http,
@@ -453,7 +511,7 @@ finally
 public sealed record CreateUploadUrlRequest(string ClientRecordingId, string ContentType = "audio/wav");
 public sealed record NoteAiReviewRequest(string? Title, string Content);
 public sealed record NoteAiAssistRequest(string? Title, string Content, string? Action, string? Instruction = null);
-public sealed record SpeakingCoachRequest(string Transcript);
+public sealed record SpeakingCoachRequest(string Transcript);\npublic sealed record SpeakingCompareRequest(string EarlierTranscript, string LaterTranscript, string? Topic = null);
 
 public sealed record TranscriptionBenchmarkRequest(string ActivityCode, string AudioObjectName,
     string ReferenceTranscript, List<string> Models, string? LanguageOverride = null);
