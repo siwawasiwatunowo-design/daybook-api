@@ -140,7 +140,7 @@ api.MapPost("/recordings/upload-url", async (CreateUploadUrlRequest request, Htt
 
 api.MapPost("/recordings", async (CreateRecordingRequest request, HttpContext http,
     IJobRepository jobs, IJobDispatcher dispatcher, IActivityProfileProvider profiles,
-    CancellationToken ct) =>
+    DaybookDbContext db, CancellationToken ct) =>
 {
     var userId = http.User.FindFirst("user_id")?.Value
         ?? http.User.FindFirst("sub")?.Value;
@@ -152,10 +152,29 @@ api.MapPost("/recordings", async (CreateRecordingRequest request, HttpContext ht
     if (!await profiles.ExistsAsync(request.ActivityCode, ct))
         return Results.BadRequest(new { error = $"Unknown ActivityCode: {request.ActivityCode}" });
 
+    // Idempotency: a client retry after a lost/failed HTTP response must not create
+    // another job for the same user's already-uploaded audio object.
+    var existing = await db.RecordingJobs
+        .SingleOrDefaultAsync(x => x.UserId == userId && x.AudioObjectName == request.AudioObjectName, ct);
+    if (existing is not null)
+    {
+        if (existing.Status is JobStatus.Failed or JobStatus.NeedsReview)
+        {
+            if (await jobs.RequestRetryAsync(existing.Id, userId, ct))
+                await dispatcher.EnqueueAsync(existing.Id, ct);
+        }
+        else if (existing.Status == JobStatus.Queued)
+        {
+            await dispatcher.EnqueueAsync(existing.Id, ct);
+        }
+        return Results.Accepted($"/api/recordings/{existing.Id}",
+            new { existing.Id, existing.Status, existing.ActivityCode, reused = true });
+    }
+
     var profile = await profiles.GetAsync(request.ActivityCode, ct);
     var job = await jobs.CreateAsync(userId, request, profile, ct);
     await dispatcher.EnqueueAsync(job.Id, ct);
-    return Results.Accepted($"/api/recordings/{job.Id}", new { job.Id, job.Status, job.ActivityCode });
+    return Results.Accepted($"/api/recordings/{job.Id}", new { job.Id, job.Status, job.ActivityCode, reused = false });
 });
 
 api.MapGet("/recordings/{id:guid}", async (Guid id, HttpContext http, IJobRepository jobs, CancellationToken ct) =>
