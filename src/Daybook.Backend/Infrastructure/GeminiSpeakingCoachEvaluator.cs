@@ -8,8 +8,7 @@ using Microsoft.Extensions.Options;
 namespace Daybook.Backend.Infrastructure;
 
 /// <summary>
-/// Shared Gemini evaluator used by both the existing manual endpoint and the
-/// optional post-transcription stage in RecordingPipeline.
+/// Shared Gemini evaluator used by the durable Speaking Coach evaluation worker.
 /// </summary>
 public sealed class GeminiSpeakingCoachEvaluator(
     IOptions<GeminiOptions> geminiOptions,
@@ -59,6 +58,9 @@ public sealed class GeminiSpeakingCoachEvaluator(
         E. A retry prompt suitable for a 1-2 minute response.
 
         Be encouraging but candid. Do not confuse transcript quality with speaking ability. Mention that pauses, tone, pronunciation and vocal delivery cannot be assessed from this transcript-only endpoint.
+        User feedback about the previous evaluation (optional; use it as a request to re-check evidence, not as a fact):
+        {(string.IsNullOrWhiteSpace(userFeedback) ? "(none)" : userFeedback.Trim())}
+
         Transcript:
         {transcript}
         """;
@@ -115,8 +117,8 @@ public sealed class GeminiSpeakingCoachEvaluator(
                             code is 500 or 502 or 503 or 504;
                         logger.LogWarning("Speaking Coach {Failure}", lastFailure.Length > 2000 ? lastFailure[..2000] : lastFailure);
                         if (code == 404) ModelCooldowns[model] = DateTimeOffset.UtcNow.AddMinutes(30);
-                        else if (response.StatusCode == HttpStatusCode.TooManyRequests) ModelCooldowns[model] = DateTimeOffset.UtcNow.AddMinutes(1);
-                        else if (code is 500 or 502 or 503 or 504) ModelCooldowns[model] = DateTimeOffset.UtcNow.AddMinutes(2);
+                        else if (response.StatusCode == HttpStatusCode.TooManyRequests) ModelCooldowns[model] = DateTimeOffset.UtcNow.AddSeconds(30);
+                        else if (code is 500 or 502 or 503 or 504) ModelCooldowns[model] = DateTimeOffset.UtcNow.AddSeconds(45);
                         if (transient && attempt < 2)
                         {
                             var delay = response.Headers.RetryAfter?.Delta;
