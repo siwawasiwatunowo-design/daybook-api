@@ -121,6 +121,7 @@ app.MapGet("/health", () => Results.Ok(new { status = "ok", service = "daybook-b
 var api = app.MapGroup("/api").RequireAuthorization();
 api.MapSpeakingCoachEvaluationEndpoints();
 api.MapPracticeHistoryEndpoints();
+api.MapPracticeProgressEndpoints();
 
 api.MapPost("/recordings/upload-url", async (CreateUploadUrlRequest request, HttpContext http,
     IRecordingUploadUrlProvider uploadUrls, CancellationToken ct) =>
