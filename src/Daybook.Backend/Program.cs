@@ -511,7 +511,13 @@ finally
 public sealed record CreateUploadUrlRequest(string ClientRecordingId, string ContentType = "audio/wav");
 public sealed record NoteAiReviewRequest(string? Title, string Content);
 public sealed record NoteAiAssistRequest(string? Title, string Content, string? Action, string? Instruction = null);
-public sealed record SpeakingCoachRequest(string Transcript);\npublic sealed record SpeakingCompareRequest(string EarlierTranscript, string LaterTranscript, string? Topic = null);
+public sealed record SpeakingCoachRequest(string Transcript);
+
+public sealed record SpeakingCompareRequest(
+    string EarlierTranscript,
+    string LaterTranscript,
+    string? Topic = null
+);
 
 public sealed record TranscriptionBenchmarkRequest(string ActivityCode, string AudioObjectName,
     string ReferenceTranscript, List<string> Models, string? LanguageOverride = null);
