@@ -19,6 +19,9 @@ public static class SpeakingCoachEvaluationEndpoints
 
                 var job = await db.RecordingJobs.SingleOrDefaultAsync(x => x.Id == id && x.UserId == userId, ct);
                 if (job is null) return Results.NotFound();
+                if (job.Status is JobStatus.Queued or JobStatus.Processing)
+                    return Results.Conflict(new { error = "Wait until recording transcription has completed before re-evaluating." });
+
                 var transcript = string.IsNullOrWhiteSpace(job.RefinedTranscript) ? job.RawTranscript : job.RefinedTranscript;
                 if (!job.EnableSpeakingCoach || string.IsNullOrWhiteSpace(transcript))
                     return Results.Conflict(new { error = "Speaking Coach is not available for this recording yet." });
