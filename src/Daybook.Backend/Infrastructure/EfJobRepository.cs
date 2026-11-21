@@ -22,7 +22,13 @@ public sealed class EfJobRepository(DaybookDbContext db, IOptions<WorkerOptions>
             LanguageOverride = request.LanguageOverride, ProfileVersion = profile.Version,
             ProfileSnapshotJson = JsonSerializer.Serialize(profile), Status = JobStatus.Queued,
             EnableSpeakingCoach = request.EnableSpeakingCoach,
-            SpeakingCoachTopic = request.EnableSpeakingCoach ? request.SpeakingCoachTopic : null,\n            PracticeTitle = request.EnableSpeakingCoach ? (request.PracticeTitle ?? request.SpeakingCoachTopic ?? "Speaking Practice") : "",\n            PracticeSessionId = request.EnableSpeakingCoach ? (request.PracticeSessionId ?? "") : "",\n            PracticeAttemptNumber = request.EnableSpeakingCoach ? Math.Max(1, request.PracticeAttemptNumber) : 1,\n            PracticePrompt = request.EnableSpeakingCoach ? (request.PracticePrompt ?? request.SpeakingCoachTopic ?? "") : "",\n            PracticeMode = request.EnableSpeakingCoach ? (request.PracticeMode ?? "SOLO") : "",\n            SourceNoteId = request.EnableSpeakingCoach ? (request.SourceNoteId ?? "") : "",
+            SpeakingCoachTopic = request.EnableSpeakingCoach ? request.SpeakingCoachTopic : null,
+            PracticeTitle = request.EnableSpeakingCoach ? (request.PracticeTitle ?? request.SpeakingCoachTopic ?? "Speaking Practice") : "",
+            PracticeSessionId = request.EnableSpeakingCoach ? (request.PracticeSessionId ?? "") : "",
+            PracticeAttemptNumber = request.EnableSpeakingCoach ? Math.Max(1, request.PracticeAttemptNumber) : 1,
+            PracticePrompt = request.EnableSpeakingCoach ? (request.PracticePrompt ?? request.SpeakingCoachTopic ?? "") : "",
+            PracticeMode = request.EnableSpeakingCoach ? (request.PracticeMode ?? "SOLO") : "",
+            SourceNoteId = request.EnableSpeakingCoach ? (request.SourceNoteId ?? "") : "",
             SpeakingCoachStatus = request.EnableSpeakingCoach ? "Queued" : "NotRequested"
         };
         db.RecordingJobs.Add(job);
