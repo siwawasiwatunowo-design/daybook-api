@@ -24,10 +24,31 @@ public sealed class RecordingJob
     public string SpeakingCoachStatus { get; set; } = "NotRequested";
     public string? SpeakingCoachResult { get; set; }
     public string? SpeakingCoachError { get; set; }
+    public string ProcessingStage { get; set; } = "Queued";
+    public int ProcessingStep { get; set; } = 1;
+    public int ProcessingTotalSteps { get; set; } = 7;
+    public string? ProcessingDetail { get; set; }
     public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.UtcNow;
     public DateTimeOffset UpdatedAt { get; set; } = DateTimeOffset.UtcNow;
     public DateTimeOffset? CompletedAt { get; set; }
     public List<RecordingChunk> Chunks { get; set; } = [];
+}
+
+public sealed class SpeakingCoachEvaluation
+{
+    public Guid Id { get; set; }
+    public Guid RecordingJobId { get; set; }
+    public string UserId { get; set; } = "";
+    public int Version { get; set; }
+    public string? Feedback { get; set; }
+    public string Status { get; set; } = "Queued";
+    public string? Result { get; set; }
+    public string? Error { get; set; }
+    public int AttemptCount { get; set; }
+    public DateTimeOffset? NextAttemptAt { get; set; }
+    public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.UtcNow;
+    public DateTimeOffset UpdatedAt { get; set; } = DateTimeOffset.UtcNow;
+    public DateTimeOffset? CompletedAt { get; set; }
 }
 
 public sealed class RecordingChunk
@@ -67,4 +88,5 @@ public sealed record RecordingJobView(Guid Id, string ActivityCode, JobStatus St
     int? DurationSeconds, int ChunkCount, int CompletedChunks, string? ErrorMessage,
     string? RawTranscript, string? RefinedTranscript, string? MomJson,
     IReadOnlyList<RecordingChunkView> Chunks, DateTimeOffset CreatedAt, DateTimeOffset UpdatedAt,
-    bool EnableSpeakingCoach, string SpeakingCoachStatus, string? SpeakingCoachResult, string? SpeakingCoachError);
+    bool EnableSpeakingCoach, string SpeakingCoachStatus, string? SpeakingCoachResult, string? SpeakingCoachError,
+    string ProcessingStage, int ProcessingStep, int ProcessingTotalSteps, string? ProcessingDetail);
