@@ -107,7 +107,7 @@ public static class LearningEndpoints
             LEARNING GUIDE:
             {{request.GuideJson}}
             USER COMPREHENSION ANSWERS:
-            {string.Join("\n", answers.Select((x, i) => $"{i + 1}. {x}"))}
+            {{string.Join("\n", answers.Select((x, i) => $"{i + 1}. {x}"))}}
             USER'S OWN OPINION:
             {{request.Opinion ?? ""}}
             """;
