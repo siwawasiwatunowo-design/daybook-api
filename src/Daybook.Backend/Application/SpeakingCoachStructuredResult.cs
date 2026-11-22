@@ -8,6 +8,15 @@ public static class SpeakingCoachStructuredResult
 {
     public const string Marker = "---DAYBOOK_STRUCTURED_V2---";
     private static readonly string[] Dimensions = ["Structure", "Clarity", "Context", "Reasoning", "Conciseness", "Conclusion"];
+    private static readonly Dictionary<string, string[]> CodesByDimension = new(StringComparer.Ordinal)
+    {
+        ["Structure"] = ["MISSING_OVERVIEW", "DISORDERED_SEQUENCE", "SOLUTION_BEFORE_PROBLEM", "WEAK_TRANSITIONS"],
+        ["Clarity"] = ["AMBIGUOUS_REFERENCE", "UNDEFINED_TERM", "INCOMPLETE_EXPLANATION", "UNCLEAR_MAIN_POINT"],
+        ["Context"] = ["MISSING_BACKGROUND", "MISSING_SCOPE", "MISSING_CONSTRAINT", "ASSUMED_SHARED_CONTEXT"],
+        ["Reasoning"] = ["CLAIM_WITHOUT_SUPPORT", "CAUSE_EFFECT_GAP", "MISSING_JUSTIFICATION", "INCONSISTENT_REASONING"],
+        ["Conciseness"] = ["REPETITION", "IRRELEVANT_DETOUR", "OVEREXPLANATION"],
+        ["Conclusion"] = ["NO_CLEAR_TAKEAWAY", "NO_NEXT_STEP", "NO_CLEAR_DECISION"]
+    };
     private static readonly HashSet<string> IssueCodes = new(StringComparer.Ordinal)
     {
         "MISSING_OVERVIEW", "DISORDERED_SEQUENCE", "SOLUTION_BEFORE_PROBLEM", "WEAK_TRANSITIONS",
@@ -35,6 +44,7 @@ public static class SpeakingCoachStructuredResult
             var dimensions = root.GetProperty("dimensionAssessments");
             if (dimensions.ValueKind != JsonValueKind.Array || dimensions.GetArrayLength() != 6)
                 throw new JsonException("Exactly six dimensions are required.");
+            var observedCodes = new HashSet<string>(StringComparer.Ordinal);
             for (var i = 0; i < Dimensions.Length; i++)
             {
                 var item = dimensions[i];
@@ -44,10 +54,21 @@ public static class SpeakingCoachStructuredResult
                     throw new JsonException("Unknown dimension status.");
                 var findings = item.GetProperty("findings");
                 if (findings.ValueKind != JsonValueKind.Array) throw new JsonException("Findings must be an array.");
+                if (status == "needs_improvement" && findings.GetArrayLength() == 0)
+                    throw new JsonException("A needs_improvement dimension requires a finding.");
+                if (status != "needs_improvement" && findings.GetArrayLength() > 0)
+                    throw new JsonException("Findings require needs_improvement status.");
                 foreach (var finding in findings.EnumerateArray())
                 {
                     var code = finding.GetProperty("issueCode").GetString();
-                    if (code is null || !IssueCodes.Contains(code)) throw new JsonException("Unknown issue code.");
+                    if (code is null || !IssueCodes.Contains(code) ||
+                        !CodesByDimension[Dimensions[i]].Contains(code, StringComparer.Ordinal))
+                        throw new JsonException("Issue code does not belong to its dimension.");
+                    observedCodes.Add(code);
+                    if (string.IsNullOrWhiteSpace(finding.GetProperty("title").GetString()) ||
+                        string.IsNullOrWhiteSpace(finding.GetProperty("impact").GetString()) ||
+                        string.IsNullOrWhiteSpace(finding.GetProperty("improvementAdvice").GetString()))
+                        throw new JsonException("Finding explanation is incomplete.");
                     var level = finding.GetProperty("impactLevel").GetString();
                     if (level is not ("high" or "medium" or "low")) throw new JsonException("Unknown impact level.");
                     var evidence = finding.GetProperty("evidence");
@@ -68,8 +89,13 @@ public static class SpeakingCoachStructuredResult
                 exercise.GetProperty("successCriteria").ValueKind != JsonValueKind.Array)
                 throw new JsonException("Suggested exercise is incomplete.");
             var priority = session.GetProperty("priorityIssueCode");
-            if (priority.ValueKind == JsonValueKind.String && !IssueCodes.Contains(priority.GetString()!))
-                throw new JsonException("Unknown priority issue code.");
+            if (priority.ValueKind == JsonValueKind.String &&
+                (!IssueCodes.Contains(priority.GetString()!) || !observedCodes.Contains(priority.GetString()!)))
+                throw new JsonException("Priority issue code must reference an observed finding.");
+            if (priority.ValueKind is not (JsonValueKind.String or JsonValueKind.Null))
+                throw new JsonException("Priority issue code must be a known code or null.");
+            if (exercise.GetProperty("successCriteria").GetArrayLength() == 0)
+                throw new JsonException("Suggested exercise requires at least one success criterion.");
             return new(feedback, JsonSerializer.Serialize(root), "Valid");
         }
         catch (Exception ex) when (ex is JsonException or InvalidOperationException or KeyNotFoundException)
