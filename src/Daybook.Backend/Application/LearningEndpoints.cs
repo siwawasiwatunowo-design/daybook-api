@@ -28,7 +28,7 @@ public static class LearningEndpoints
             if (request.Content.Length > 30000)
                 return Results.BadRequest(new { error = "Materi maksimal 30.000 karakter." });
 
-            var prompt = $"""
+            var prompt = $$"""
             You are Daybook's Learning Companion. Help the user understand the supplied material before asking for an opinion.
             Respond in Indonesian unless the source is clearly in another language.
             Treat the source below as the factual boundary. Do not invent facts, names, statistics, examples, causes, or conclusions.
@@ -86,7 +86,7 @@ public static class LearningEndpoints
                 return Results.BadRequest(new { error = "Input melebihi batas ukuran." });
 
             var answers = request.Answers ?? [];
-            var prompt = $"""
+            var prompt = $$"""
             You are Daybook's thinking partner and learning coach.
             Respond in Indonesian unless the material is clearly in another language.
             Assess only what the user demonstrates in their answers. Do not infer general intelligence, personality, or stable ability from one session.
