@@ -16,7 +16,8 @@ public static class PracticeHistoryEndpoints
             if (string.IsNullOrWhiteSpace(userId)) return Results.Unauthorized();
 
             var jobs = await db.RecordingJobs.AsNoTracking()
-                .Where(x => x.UserId == userId && x.EnableSpeakingCoach)
+                .Where(x => x.UserId == userId && x.EnableSpeakingCoach &&
+                    (!string.IsNullOrWhiteSpace(x.PracticeSessionId) || x.PracticeTitle.StartsWith("Practice —")))
                 .Include(x => x.Chunks)
                 .OrderByDescending(x => x.CreatedAt)
                 .ToListAsync(ct);
