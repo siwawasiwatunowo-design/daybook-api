@@ -35,25 +35,25 @@ public static class LearningEndpoints
             If the source is incomplete or ambiguous, explicitly say so. Do not add outside knowledge as if it came from the source.
             Create a compact, useful learning guide. Do not test the user yet and do not write a generic summary.
             Return ONLY one valid JSON object with this exact schema:
-            {{
+            {
               "title": "short, accurate title",
               "overview": "plain-language explanation of what the material is mainly about",
               "centralQuestion": "one meaningful question that captures the central issue",
               "keyIdeas": ["3 to 5 source-grounded ideas, each understandable without jargon"],
-              "terms": [{{"term":"term or concept","meaning":"meaning supported by source; use 'Belum dijelaskan dalam materi' if absent"}}],
+              "terms": [{"term":"term or concept","meaning":"meaning supported by source; use 'Belum dijelaskan dalam materi' if absent"}],
               "comprehensionQuestions": [
-                {{"question":"question answerable from the source","expectedFocus":"what a sufficient answer should demonstrate"}}
+                {"question":"question answerable from the source","expectedFocus":"what a sufficient answer should demonstrate"}
               ],
               "thinkingQuestions": [
-                {{"question":"open question that invites analysis or a position","purpose":"what thinking this invites"}}
+                {"question":"open question that invites analysis or a position","purpose":"what thinking this invites"}
               ],
               "sourceLimitations": ["important context or evidence missing from the supplied source, if any"]
-            }}
+            }
             Provide 3 comprehension questions and 2 thinking questions. Avoid trivia; test the main idea, relationships, and implications.
-            Title: {{request.Title ?? "(tanpa judul)"}}
-            Source type: {{request.SourceType ?? "user-provided material"}}
+            Title: {request.Title ?? "(tanpa judul)"}
+            Source type: {request.SourceType ?? "user-provided material"}
             MATERIAL (source of truth):
-            {{request.Content}}
+            {request.Content}
             """;
 
             try
@@ -94,22 +94,22 @@ public static class LearningEndpoints
             Ground feedback in the supplied material. If an answer is unsupported, say what evidence is missing rather than calling it wrong.
             Do not reward agreement with a particular viewpoint. Evaluate whether the user's reasoning is understandable and supported.
             Return ONLY one valid JSON object:
-            {{
+            {
               "understandingFeedback": "specific, supportive feedback on what was understood and what remains unclear; state uncertainty where needed",
               "understood": ["specific ideas the user correctly captured, if supported"],
               "gaps": ["specific gaps or misunderstandings supported by the answers; empty if none can be established"],
               "thinkingFeedback": "feedback on how the user formed an opinion, used reasons, considered implications or perspectives; distinguish insufficient evidence",
               "followUpQuestion": "one question that helps the user deepen their own thinking without giving them the answer",
               "speakingPrompt": "a 1-2 minute prompt based on this material and the user's own position; never require speaking if they do not want to"
-            }}
+            }
             MATERIAL:
-            {{request.Material}}
+            {request.Material}
             LEARNING GUIDE:
-            {{request.GuideJson}}
+            {request.GuideJson}
             USER COMPREHENSION ANSWERS:
-            {{string.Join("\n", answers.Select((x, i) => $"{i + 1}. {x}"))}}
+            {string.Join("\n", answers.Select((x, i) => $"{i + 1}. {x}"))}
             USER'S OWN OPINION:
-            {{request.Opinion ?? ""}}
+            {request.Opinion ?? ""}
             """;
 
             try
