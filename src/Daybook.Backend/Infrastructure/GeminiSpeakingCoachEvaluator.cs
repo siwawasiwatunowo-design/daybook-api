@@ -79,6 +79,34 @@ public sealed class GeminiSpeakingCoachEvaluator(
         D. Latihan fokus berikutnya — one small exercise directly targeting the highest-impact improvement.
         E. Prompt latihan berikutnya — one relevant 1–2 minute prompt, aligned with the original practice task.
 
+        STRUCTURED OUTPUT FOR DAYBOOK IMPROVEMENT ENGINE
+        After the human-readable feedback above, append this exact delimiter on its own line:
+        ---DAYBOOK_STRUCTURED_V2---
+        Then append one valid JSON object (no Markdown fence) with this exact shape:
+        {
+          "schemaVersion": 2,
+          "taskType": "problem_explanation|idea_presentation|concept_explanation|status_update|reflection|general",
+          "dimensionAssessments": [
+            {"dimension":"Structure|Clarity|Context|Reasoning|Conciseness|Conclusion","status":"needs_improvement|adequate|insufficient_evidence|not_applicable","summary":"...","findings":[
+              {"issueCode":"KNOWN_CODE","title":"...","impact":"...","impactLevel":"high|medium|low","evidence":["EXACT VERBATIM TRANSCRIPT QUOTE"],"improvementAdvice":"..."}
+            ]}
+          ],
+          "sessionFeedback": {
+            "strengths":["..."],
+            "priorityIssueCode":"KNOWN_CODE or null",
+            "suggestedExercise":{"title":"...","instructions":"...","successCriteria":["..."]}
+          }
+        }
+        Include exactly six dimensions in the required order. Use only these issue codes:
+        Structure: MISSING_OVERVIEW, DISORDERED_SEQUENCE, SOLUTION_BEFORE_PROBLEM, WEAK_TRANSITIONS
+        Clarity: AMBIGUOUS_REFERENCE, UNDEFINED_TERM, INCOMPLETE_EXPLANATION, UNCLEAR_MAIN_POINT
+        Context: MISSING_BACKGROUND, MISSING_SCOPE, MISSING_CONSTRAINT, ASSUMED_SHARED_CONTEXT
+        Reasoning: CLAIM_WITHOUT_SUPPORT, CAUSE_EFFECT_GAP, MISSING_JUSTIFICATION, INCONSISTENT_REASONING
+        Conciseness: REPETITION, IRRELEVANT_DETOUR, OVEREXPLANATION
+        Conclusion: NO_CLEAR_TAKEAWAY, NO_NEXT_STEP, NO_CLEAR_DECISION
+        Every evidence quote must be an exact substring of the transcript. Do not invent findings. Use an empty findings array when evidence is insufficient. Use general when task type is uncertain.
+        The suggested exercise targets the single highest-impact justified issue; if none exists, suggest a maintenance exercise. Structured JSON must not contradict the human-readable feedback.
+
         SCORING AND CONSISTENCY
         - Do not assign numeric scores, grades, percentages, CEFR levels, or claims of objective measurement.
         - Do not change the six dimensions, their order, or their meanings.

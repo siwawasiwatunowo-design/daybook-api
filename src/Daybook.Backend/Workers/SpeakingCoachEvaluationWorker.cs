@@ -91,10 +91,14 @@ public sealed class SpeakingCoachEvaluationWorker(
                     var evaluator = scope.ServiceProvider.GetRequiredService<ISpeakingCoachEvaluator>();
                     using var evaluationTimeout = CancellationTokenSource.CreateLinkedTokenSource(stoppingToken);
                     evaluationTimeout.CancelAfter(TimeSpan.FromMinutes(5));
-                    var result = await evaluator.EvaluateAsync(transcript, job.SpeakingCoachTopic,
+                    var rawResult = await evaluator.EvaluateAsync(transcript, job.SpeakingCoachTopic,
                         evaluationTimeout.Token, evaluation.Feedback);
+                    var parsedResult = SpeakingCoachStructuredResult.Extract(rawResult, transcript);
+                    var result = parsedResult.Feedback;
                     evaluation.Status = "Completed";
                     evaluation.Result = result;
+                    evaluation.StructuredResultJson = parsedResult.StructuredJson;
+                    evaluation.StructuredValidationStatus = parsedResult.ValidationStatus;
                     evaluation.Error = null;
                     evaluation.NextAttemptAt = null;
                     evaluation.CompletedAt = DateTimeOffset.UtcNow;

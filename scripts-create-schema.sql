@@ -107,3 +107,8 @@ ALTER TABLE "RecordingJobs" ADD COLUMN IF NOT EXISTS "PracticeMode" varchar(32) 
 ALTER TABLE "RecordingJobs" ADD COLUMN IF NOT EXISTS "SourceNoteId" varchar(128) NOT NULL DEFAULT '';
 CREATE INDEX IF NOT EXISTS "IX_RecordingJobs_UserId_EnableSpeakingCoach_CreatedAt"
   ON "RecordingJobs" ("UserId", "EnableSpeakingCoach", "CreatedAt");
+
+
+-- Structured Speaking Coach V2. Existing evaluations remain readable as Legacy.
+ALTER TABLE "SpeakingCoachEvaluations" ADD COLUMN IF NOT EXISTS "StructuredResultJson" text NULL;
+ALTER TABLE "SpeakingCoachEvaluations" ADD COLUMN IF NOT EXISTS "StructuredValidationStatus" varchar(32) NOT NULL DEFAULT 'Legacy';
