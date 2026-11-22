@@ -14,7 +14,9 @@ public static class SpeakingCoachEvaluationEndpoints
             {
                 var userId = http.User.FindFirst("user_id")?.Value ?? http.User.FindFirst("sub")?.Value;
                 if (string.IsNullOrWhiteSpace(userId)) return Results.Unauthorized();
-                if (request.Feedback?.Length > 2000)
+                if (string.IsNullOrWhiteSpace(request.Feedback))
+                    return Results.BadRequest(new { error = "Feedback is required when requesting a manual re-evaluation." });
+                if (request.Feedback.Length > 2000)
                     return Results.BadRequest(new { error = "Feedback must be at most 2,000 characters." });
 
                 var job = await db.RecordingJobs.SingleOrDefaultAsync(x => x.Id == id && x.UserId == userId, ct);
