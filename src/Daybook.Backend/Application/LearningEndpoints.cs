@@ -50,10 +50,10 @@ public static class LearningEndpoints
               "sourceLimitations": ["important context or evidence missing from the supplied source, if any"]
             }}
             Provide 3 comprehension questions and 2 thinking questions. Avoid trivia; test the main idea, relationships, and implications.
-            Title: {request.Title ?? "(tanpa judul)"}
-            Source type: {request.SourceType ?? "user-provided material"}
+            Title: {{request.Title ?? "(tanpa judul)"}}
+            Source type: {{request.SourceType ?? "user-provided material"}}
             MATERIAL (source of truth):
-            {request.Content}
+            {{request.Content}}
             """;
 
             try
@@ -103,13 +103,13 @@ public static class LearningEndpoints
               "speakingPrompt": "a 1-2 minute prompt based on this material and the user's own position; never require speaking if they do not want to"
             }}
             MATERIAL:
-            {request.Material}
+            {{request.Material}}
             LEARNING GUIDE:
-            {request.GuideJson}
+            {{request.GuideJson}}
             USER COMPREHENSION ANSWERS:
             {string.Join("\n", answers.Select((x, i) => $"{i + 1}. {x}"))}
             USER'S OWN OPINION:
-            {request.Opinion ?? ""}
+            {{request.Opinion ?? ""}}
             """;
 
             try
