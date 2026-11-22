@@ -29,7 +29,7 @@ public static class PracticeImprovementEngine
 
         var findings = new List<Finding>();
         foreach (var attempt in attempts)
-        foreach (var dimension in attempt.Document.RootElement.GetProperty("dimensionAssessments").EnumerateArray())
+        foreach (var dimension in attempt.Root.GetProperty("dimensionAssessments").EnumerateArray())
         foreach (var finding in dimension.GetProperty("findings").EnumerateArray())
         {
             var evidence = finding.GetProperty("evidence");
@@ -54,7 +54,7 @@ public static class PracticeImprovementEngine
         var comparable = attempts.Where(x => x.TaskType == selected.Key.TaskType).ToList();
         var latestIssueAt = selected.Items.Max(x => x.Attempt.Job.CreatedAt);
         var positiveEvidence = comparable.Count(x => x.Job.CreatedAt > latestIssueAt &&
-            x.Document.RootElement.GetProperty("dimensionAssessments").EnumerateArray().Any(d =>
+            x.Root.GetProperty("dimensionAssessments").EnumerateArray().Any(d =>
                 d.GetProperty("dimension").GetString() == selected.Key.Dimension &&
                 d.GetProperty("status").GetString() == "adequate" &&
                 !d.GetProperty("findings").EnumerateArray().Any(f => f.GetProperty("issueCode").GetString() == selected.Key.Code)));
@@ -63,10 +63,10 @@ public static class PracticeImprovementEngine
         var latestFinding = selected.Items[0];
         var exerciseAttempt = selected.Items.FirstOrDefault(x =>
         {
-            var priority = x.Attempt.Document.RootElement.GetProperty("sessionFeedback").GetProperty("priorityIssueCode");
+            var priority = x.Attempt.Root.GetProperty("sessionFeedback").GetProperty("priorityIssueCode");
             return priority.ValueKind == JsonValueKind.String && priority.GetString() == selected.Key.Code;
         })?.Attempt ?? latestFinding.Attempt;
-        var session = exerciseAttempt.Document.RootElement.GetProperty("sessionFeedback");
+        var session = exerciseAttempt.Root.GetProperty("sessionFeedback");
         var exercise = session.GetProperty("suggestedExercise");
         var nextPractice = new
         {
