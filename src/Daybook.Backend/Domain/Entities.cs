@@ -49,6 +49,8 @@ public sealed class SpeakingCoachEvaluation
     public string? Feedback { get; set; }
     public string Status { get; set; } = "Queued";
     public string? Result { get; set; }
+    public string? StructuredResultJson { get; set; }
+    public string StructuredValidationStatus { get; set; } = "Legacy";
     public string? Error { get; set; }
     public int AttemptCount { get; set; }
     public DateTimeOffset? NextAttemptAt { get; set; }

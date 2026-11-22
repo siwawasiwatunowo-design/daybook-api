@@ -34,6 +34,8 @@ public static class PracticeHistoryEndpoints
                     feedback = e.Feedback,
                     status = e.Status,
                     result = e.Result,
+                    structuredResultJson = e.StructuredResultJson,
+                    structuredValidationStatus = e.StructuredValidationStatus,
                     error = e.Error,
                     attemptCount = e.AttemptCount,
                     createdAt = e.CreatedAt,

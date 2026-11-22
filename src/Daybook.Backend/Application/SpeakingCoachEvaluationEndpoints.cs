@@ -68,7 +68,7 @@ public static class SpeakingCoachEvaluationEndpoints
                     .Where(x => x.RecordingJobId == id && x.UserId == userId)
                     .OrderBy(x => x.Version)
                     .Select(x => new SpeakingCoachEvaluationView(x.Id, x.Version, x.Feedback, x.Status,
-                        x.Result, x.Error, x.AttemptCount, x.CreatedAt, x.CompletedAt))
+                        x.Result, x.StructuredResultJson, x.StructuredValidationStatus, x.Error, x.AttemptCount, x.CreatedAt, x.CompletedAt))
                     .ToListAsync(ct);
                 return Results.Ok(evaluations);
             });
@@ -79,4 +79,4 @@ public static class SpeakingCoachEvaluationEndpoints
 
 public sealed record CreateSpeakingCoachEvaluationRequest(string? Feedback);
 public sealed record SpeakingCoachEvaluationView(Guid Id, int Version, string? Feedback, string Status,
-    string? Result, string? Error, int AttemptCount, DateTimeOffset CreatedAt, DateTimeOffset? CompletedAt);
+    string? Result, string? StructuredResultJson, string StructuredValidationStatus, string? Error, int AttemptCount, DateTimeOffset CreatedAt, DateTimeOffset? CompletedAt);

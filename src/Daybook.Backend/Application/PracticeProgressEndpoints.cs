@@ -86,6 +86,7 @@ public static class PracticeProgressEndpoints
                 totalAttempts = jobs.Count,
                 totalPracticeSeconds = jobs.Sum(x => Math.Max(0, x.DurationSeconds ?? 0)),
                 evaluatedAttempts,
+                improvement = PracticeImprovementEngine.Build(jobs, evaluations),
                 pendingEvaluations = jobs.Count(x =>
                     string.Equals(x.SpeakingCoachStatus, "Queued", StringComparison.OrdinalIgnoreCase)
                     || string.Equals(x.SpeakingCoachStatus, "Processing", StringComparison.OrdinalIgnoreCase)),
