@@ -122,6 +122,7 @@ var api = app.MapGroup("/api").RequireAuthorization();
 api.MapSpeakingCoachEvaluationEndpoints();
 api.MapPracticeHistoryEndpoints();
 api.MapPracticeProgressEndpoints();
+api.MapLearningEndpoints();
 
 api.MapPost("/recordings/upload-url", async (CreateUploadUrlRequest request, HttpContext http,
     IRecordingUploadUrlProvider uploadUrls, CancellationToken ct) =>
