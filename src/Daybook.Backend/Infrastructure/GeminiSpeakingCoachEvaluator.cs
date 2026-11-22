@@ -80,23 +80,15 @@ public sealed class GeminiSpeakingCoachEvaluator(
         E. Prompt latihan berikutnya — one relevant 1–2 minute prompt, aligned with the original practice task.
 
         STRUCTURED OUTPUT FOR DAYBOOK IMPROVEMENT ENGINE
-        After the human-readable feedback above, append this exact delimiter on its own line:
+                After the human-readable feedback above, append this exact delimiter on its own line:
         ---DAYBOOK_STRUCTURED_V2---
-        Then append one valid JSON object (no Markdown fence) with this exact shape:
-        {
-          "schemaVersion": 2,
-          "taskType": "problem_explanation|idea_presentation|concept_explanation|status_update|reflection|general",
-          "dimensionAssessments": [
-            {"dimension":"Structure|Clarity|Context|Reasoning|Conciseness|Conclusion","status":"needs_improvement|adequate|insufficient_evidence|not_applicable","summary":"...","findings":[
-              {"issueCode":"KNOWN_CODE","title":"...","impact":"...","impactLevel":"high|medium|low","evidence":["EXACT VERBATIM TRANSCRIPT QUOTE"],"improvementAdvice":"..."}
-            ]}
-          ],
-          "sessionFeedback": {
-            "strengths":["..."],
-            "priorityIssueCode":"KNOWN_CODE or null",
-            "suggestedExercise":{"title":"...","instructions":"...","successCriteria":["..."]}
-          }
-        }
+        Then append one valid JSON object without Markdown fences. It must contain:
+        - schemaVersion: integer 2
+        - taskType: one of problem_explanation, idea_presentation, concept_explanation, status_update, reflection, general
+        - dimensionAssessments: an array of exactly six objects, in the required dimension order. Each object has dimension, status, summary, and findings.
+        - Each finding has issueCode, title, impact, impactLevel, evidence, and improvementAdvice. Evidence is an array of exact transcript quotes.
+        - sessionFeedback has strengths (array), priorityIssueCode (known code or null), and suggestedExercise.
+        - suggestedExercise has title, instructions, and successCriteria (array).
         Include exactly six dimensions in the required order. Use only these issue codes:
         Structure: MISSING_OVERVIEW, DISORDERED_SEQUENCE, SOLUTION_BEFORE_PROBLEM, WEAK_TRANSITIONS
         Clarity: AMBIGUOUS_REFERENCE, UNDEFINED_TERM, INCOMPLETE_EXPLANATION, UNCLEAR_MAIN_POINT

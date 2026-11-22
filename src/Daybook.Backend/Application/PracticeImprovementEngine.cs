@@ -61,7 +61,12 @@ public static class PracticeImprovementEngine
         var status = positiveEvidence > 0 ? "Early Positive Signal" :
             selected.Count > 1 ? "Recurring Pattern" : "Initial Observation";
         var latestFinding = selected.Items[0];
-        var session = latestFinding.Attempt.Document.RootElement.GetProperty("sessionFeedback");
+        var exerciseAttempt = selected.Items.FirstOrDefault(x =>
+        {
+            var priority = x.Attempt.Document.RootElement.GetProperty("sessionFeedback").GetProperty("priorityIssueCode");
+            return priority.ValueKind == JsonValueKind.String && priority.GetString() == selected.Key.Code;
+        })?.Attempt ?? latestFinding.Attempt;
+        var session = exerciseAttempt.Document.RootElement.GetProperty("sessionFeedback");
         var exercise = session.GetProperty("suggestedExercise");
         var nextPractice = new
         {
