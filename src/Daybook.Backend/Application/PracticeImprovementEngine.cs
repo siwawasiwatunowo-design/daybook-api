@@ -5,7 +5,7 @@ namespace Daybook.Backend.Application;
 
 public static class PracticeImprovementEngine
 {
-    private sealed record Attempt(RecordingJob Job, SpeakingCoachEvaluation Evaluation, JsonDocument Document, string TaskType);
+    private sealed record Attempt(RecordingJob Job, JsonElement Root, string TaskType, string TaskKey);
     private sealed record Finding(Attempt Attempt, string Dimension, string Code, string Title, string Impact,
         string Level, string Quote, string Advice);
 
@@ -19,9 +19,14 @@ public static class PracticeImprovementEngine
             .Select(g => g.OrderByDescending(x => x.Version).First())
             .Select(e =>
             {
-                var doc = JsonDocument.Parse(e.StructuredResultJson!);
+                using var doc = JsonDocument.Parse(e.StructuredResultJson!);
                 var task = doc.RootElement.GetProperty("taskType").GetString() ?? "general";
-                return new Attempt(jobMap[e.RecordingJobId], e, doc, task);
+                var job = jobMap[e.RecordingJobId];
+                var prompt = !string.IsNullOrWhiteSpace(job.PracticePrompt) ? job.PracticePrompt
+                    : !string.IsNullOrWhiteSpace(job.SpeakingCoachTopic) ? job.SpeakingCoachTopic : job.PracticeTitle;
+                var normalizedPrompt = string.Join(" ", prompt.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries))
+                    .Trim().ToLowerInvariant();
+                return new Attempt(job, doc.RootElement.Clone(), task, $"{task}:{normalizedPrompt}");
             }).OrderBy(x => x.Job.CreatedAt).ToList();
 
         if (attempts.Count == 0)
@@ -43,7 +48,7 @@ public static class PracticeImprovementEngine
         if (findings.Count == 0)
             return new { hasEvidence = true, message = "Belum ada pola kelemahan yang didukung bukti. Pertahankan praktik yang sudah berjalan dan lanjutkan latihan.", currentFocus = (object?)null, nextPractice = (object?)null, patterns = Array.Empty<object>() };
 
-        var selected = findings.GroupBy(x => new { x.Attempt.TaskType, x.Code, x.Dimension })
+        var selected = findings.GroupBy(x => new { x.Attempt.TaskType, x.Attempt.TaskKey, x.Code, x.Dimension })
             .Select(g => new { Key = g.Key, Items = g.OrderByDescending(x => x.Attempt.Job.CreatedAt).ToList(),
                 Count = g.Select(x => x.Attempt.Job.Id).Distinct().Count(),
                 Severity = g.Max(x => x.Level == "high" ? 3 : x.Level == "medium" ? 2 : 1),
@@ -51,7 +56,7 @@ public static class PracticeImprovementEngine
             .OrderByDescending(x => x.Count).ThenByDescending(x => x.Severity).ThenByDescending(x => x.Latest)
             .First();
 
-        var comparable = attempts.Where(x => x.TaskType == selected.Key.TaskType).ToList();
+        var comparable = attempts.Where(x => x.TaskKey == selected.Key.TaskKey).ToList();
         var latestIssueAt = selected.Items.Max(x => x.Attempt.Job.CreatedAt);
         var positiveEvidence = comparable.Count(x => x.Job.CreatedAt > latestIssueAt &&
             x.Root.GetProperty("dimensionAssessments").EnumerateArray().Any(d =>
